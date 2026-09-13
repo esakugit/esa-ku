@@ -1,0 +1,18 @@
+{
+  "name": "esa-platform",
+  "private": true,
+  "version": "0.1.0",
+  "description": "ESA Campus Platform (Kenyatta University) — membership badge, events, timetable, and past-papers PWA.",
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "start": "pnpm --filter web start",
+    "typecheck": "pnpm -r typecheck",
+    "db:generate": "pnpm --filter @esa/db generate",
+    "db:migrate": "pnpm --filter @esa/db migrate"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.28.0"
+}

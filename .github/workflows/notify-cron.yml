@@ -1,0 +1,20 @@
+name: Notification cron
+
+# Vercel Hobby's built-in Cron Jobs only fire once a day — too coarse for
+# "your class starts in 15 minutes" (spec §12). GitHub Actions' scheduler is
+# free and can run every few minutes, so it calls the app's own
+# /api/cron/notify endpoint instead. That endpoint is idempotent (see its
+# comments), so overlapping or slightly-late runs never double-send.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /api/cron/notify
+        run: |
+          curl -sf -X POST "${{ secrets.APP_URL }}/api/cron/notify" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
