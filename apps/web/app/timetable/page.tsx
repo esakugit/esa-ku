@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { db, cohorts } from "@esa/db";
 import { eq } from "drizzle-orm";
 import { BottomNav } from "@/components/BottomNav";
+import { SidebarNav } from "@/components/SidebarNav";
+import { isEsaAdmin } from "@/lib/roles";
 import { TimetableView } from "@/components/TimetableView";
 
 export default async function TimetablePage() {
@@ -12,7 +14,9 @@ export default async function TimetablePage() {
 
   if (!user.cohortId) {
     return (
-      <main className="mx-auto max-w-xl px-5 pb-24 pt-8">
+      <div className="md:flex">
+        <SidebarNav showAdmin={isEsaAdmin(user)} />
+        <main className="mx-auto w-full max-w-xl px-5 pb-24 pt-8 md:max-w-3xl md:px-10 md:py-10 md:pb-10 lg:max-w-4xl md:ml-56">
         <h1 className="mb-4 text-2xl font-bold text-ink">Timetable</h1>
         <div className="card p-5">
           <p className="text-sm text-neutral-600">
@@ -23,7 +27,8 @@ export default async function TimetablePage() {
           </Link>
         </div>
         <BottomNav />
-      </main>
+        </main>
+      </div>
     );
   }
 
@@ -37,7 +42,9 @@ export default async function TimetablePage() {
     (user.role === "class_rep" && user.hasActiveBadge);
 
   return (
-    <main className="mx-auto max-w-xl px-5 pb-24 pt-8">
+    <div className="md:flex">
+      <SidebarNav showAdmin={isEsaAdmin(user)} />
+      <main className="mx-auto w-full max-w-xl px-5 pb-24 pt-8 md:max-w-3xl md:px-10 md:py-10 md:pb-10 lg:max-w-4xl md:ml-56">
       <header className="mb-6">
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">
           {ownCohort?.department?.name}
@@ -54,6 +61,7 @@ export default async function TimetablePage() {
       />
 
       <BottomNav />
-    </main>
+      </main>
+    </div>
   );
 }

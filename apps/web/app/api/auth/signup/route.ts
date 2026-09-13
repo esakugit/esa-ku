@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { db, users, cohorts, departments } from "@esa/db";
-import { eq, and, sql } from "drizzle-orm";
+import { db, users } from "@esa/db";
+import { eq, sql } from "drizzle-orm";
 import { hashPassword } from "@/lib/password";
 import { generateToken, tokenExpiry } from "@/lib/tokens";
 import { sendVerificationEmail } from "@/lib/email";
@@ -9,15 +9,15 @@ import { env } from "@/lib/env";
 
 // Every matriculated KU engineering student is already an ESA member (spec
 // §02) — signup only proves "I'm a real student with this email", so the
-// only required fields are identity + credentials. Department/cohort can be
-// picked now or completed later from /profile once departments exist —
-// which matters on a fresh install, see the bootstrap note below.
+// only fields collected here are identity + credentials. Department, intake
+// year and registration number are all collected in exactly one other
+// place — /complete-profile, right after verifying — never here too, so
+// there's a single, coherent onboarding path instead of two forms asking
+// for the same thing.
 const signupSchema = z.object({
   fullName: z.string().min(2).max(160),
   email: z.string().email(),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  departmentId: z.number().int().positive().optional(),
-  entryYear: z.number().int().min(2015).max(new Date().getFullYear() + 1).optional(),
 });
 
 export async function POST(req: Request) {
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  const { fullName, email, password, departmentId, entryYear } = parsed.data;
+  const { fullName, email, password } = parsed.data;
 
   if (
     env.ALLOWED_STUDENT_EMAIL_DOMAIN &&
@@ -47,32 +47,6 @@ export async function POST(req: Request) {
       { error: "An account with this email already exists." },
       { status: 409 },
     );
-  }
-
-  // Resolve/create the cohort only if a department was chosen at signup.
-  let cohortId: number | null = null;
-  if (departmentId && entryYear) {
-    let cohort = await db.query.cohorts.findFirst({
-      where: and(eq(cohorts.departmentId, departmentId), eq(cohorts.entryYear, entryYear)),
-    });
-    if (!cohort) {
-      const department = await db.query.departments.findFirst({
-        where: eq(departments.id, departmentId),
-      });
-      if (!department) {
-        return NextResponse.json({ error: "Unknown department." }, { status: 400 });
-      }
-      const [created] = await db
-        .insert(cohorts)
-        .values({
-          departmentId,
-          entryYear,
-          label: `${department.name} · intake ${entryYear}`,
-        })
-        .returning();
-      cohort = created;
-    }
-    cohortId = cohort.id;
   }
 
   // Bootstrap: on a fresh install there is no admin who could approve
@@ -94,8 +68,6 @@ export async function POST(req: Request) {
       fullName,
       email,
       passwordHash,
-      departmentId: departmentId ?? null,
-      cohortId,
       role: isBootstrap ? "super_admin" : "student",
       verificationToken,
       verificationTokenExpiresAt: tokenExpiry(24),

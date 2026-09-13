@@ -11,7 +11,15 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const isNumeric = /^\d+$/.test(id);
   const club = await db.query.clubs.findFirst({
     where: (c, { eq: eqOp, or }) => (isNumeric ? or(eqOp(c.id, Number(id)), eqOp(c.slug, id)) : eqOp(c.slug, id)),
-    with: { admins: { with: { user: true } } },
+    with: {
+      admins: {
+        with: {
+          user: {
+            columns: { id: true, fullName: true, email: true, photoBlobUrl: true },
+          },
+        },
+      },
+    },
   });
   if (!club) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(club);

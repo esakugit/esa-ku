@@ -20,7 +20,20 @@ export async function GET() {
     const rows = await db.query.badges.findMany({
       where: eq(badges.status, "pending_verification"),
       orderBy: [desc(badges.createdAt)],
-      with: { user: true },
+      with: {
+        user: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            regNo: true,
+            photoBlobUrl: true,
+            departmentId: true,
+            cohortId: true,
+            role: true,
+          },
+        },
+      },
     });
     return NextResponse.json(rows);
   }

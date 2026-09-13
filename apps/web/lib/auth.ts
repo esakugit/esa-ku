@@ -8,11 +8,14 @@ export type CurrentUser = {
   fullName: string;
   email: string;
   role: string;
+  regNo: string | null;
   departmentId: number | null;
   cohortId: number | null;
   emailVerifiedAt: Date | null;
   hasActiveBadge: boolean;
   badgeNumber: string | null;
+  /** True once department, intake year and reg. number are all set — the one signal every "finish setting up" prompt in the app checks. */
+  profileComplete: boolean;
 };
 
 /**
@@ -38,11 +41,13 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     fullName: user.fullName,
     email: user.email,
     role: user.role,
+    regNo: user.regNo,
     departmentId: user.departmentId,
     cohortId: user.cohortId,
     emailVerifiedAt: user.emailVerifiedAt,
     hasActiveBadge: Boolean(activeBadge),
     badgeNumber: activeBadge?.badgeNumber ?? null,
+    profileComplete: Boolean(user.departmentId && user.cohortId && user.regNo),
   };
 }
 

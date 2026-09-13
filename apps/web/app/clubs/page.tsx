@@ -1,14 +1,18 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
+import { isEsaAdmin } from "@/lib/roles";
 import { db } from "@esa/db";
 import { BottomNav } from "@/components/BottomNav";
+import { SidebarNav } from "@/components/SidebarNav";
 
 export default async function ClubsPage() {
   const user = await getCurrentUser();
   const clubs = await db.query.clubs.findMany({ orderBy: (c, { asc }) => asc(c.name) });
 
   return (
-    <main className="mx-auto max-w-xl px-5 pb-24 pt-8">
+    <div className="md:flex">
+      {user && <SidebarNav showAdmin={isEsaAdmin(user)} />}
+      <main className="mx-auto w-full max-w-xl px-5 pb-24 pt-8 md:max-w-3xl md:px-10 md:py-10 md:pb-10 lg:max-w-4xl md:ml-56">
       <header className="mb-6">
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">Campus clubs</p>
         <h1 className="mt-0.5 text-2xl font-bold text-ink">Clubs directory</h1>
@@ -18,7 +22,7 @@ export default async function ClubsPage() {
         </p>
       </header>
 
-      <ul className="space-y-3">
+      <ul className="space-y-3 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 lg:grid-cols-3">
         {clubs.map((c) => (
           <li key={c.id}>
             <Link href={`/clubs/${c.slug}`} className="card block p-4 transition-shadow hover:shadow-md">
@@ -44,6 +48,7 @@ export default async function ClubsPage() {
       </ul>
 
       {user && <BottomNav />}
-    </main>
+      </main>
+    </div>
   );
 }

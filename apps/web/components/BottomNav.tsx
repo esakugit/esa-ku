@@ -15,7 +15,7 @@ const items = [
  */
 export function BottomNav() {
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-20 border-t border-neutral-200 bg-white/95 backdrop-blur">
+    <nav className="fixed bottom-0 inset-x-0 z-20 border-t border-neutral-200 bg-white/95 backdrop-blur md:hidden">
       <ul className="mx-auto flex max-w-xl justify-between px-6 py-2">
         {items.map((item) => (
           <li key={item.href}>

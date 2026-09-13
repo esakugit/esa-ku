@@ -1,26 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db, badges } from "@esa/db";
-import { eq, isNotNull, desc } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { requireApiEsaAdmin, isResponse } from "@/lib/api";
 import { sendBadgeDecisionEmail } from "@/lib/email";
 import { notifyUser } from "@/lib/push";
+import { generateUniqueBadgeNumber } from "@/lib/badgeNumber";
 
 const schema = z.object({
   decision: z.enum(["approve", "reject"]),
   note: z.string().max(500).optional(),
 });
-
-async function nextBadgeNumber(): Promise<string> {
-  const [last] = await db
-    .select({ badgeNumber: badges.badgeNumber })
-    .from(badges)
-    .where(isNotNull(badges.badgeNumber))
-    .orderBy(desc(badges.id))
-    .limit(1);
-  const lastN = last?.badgeNumber ? parseInt(last.badgeNumber.replace(/\D/g, ""), 10) || 0 : 0;
-  return `ESA-${String(lastN + 1).padStart(4, "0")}`;
-}
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const admin = await requireApiEsaAdmin();
@@ -38,7 +28,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   }
 
   if (parsed.data.decision === "approve") {
-    const badgeNumber = await nextBadgeNumber();
+    const badgeNumber = await generateUniqueBadgeNumber();
     await db
       .update(badges)
       .set({

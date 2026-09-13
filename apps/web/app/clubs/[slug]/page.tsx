@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@esa/db";
 import { getCurrentUser } from "@/lib/auth";
-import { isClubAdminFor } from "@/lib/roles";
+import { isClubAdminFor, isEsaAdmin } from "@/lib/roles";
 import { BottomNav } from "@/components/BottomNav";
+import { SidebarNav } from "@/components/SidebarNav";
 import { ClubEventManager } from "@/components/ClubEventManager";
 import { FollowClubButton } from "@/components/FollowClubButton";
 
@@ -22,7 +23,9 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ slu
   });
 
   return (
-    <main className="mx-auto max-w-xl px-5 pb-24 pt-8">
+    <div className="md:flex">
+      {user && <SidebarNav showAdmin={isEsaAdmin(user)} />}
+      <main className="mx-auto w-full max-w-xl px-5 pb-24 pt-8 md:max-w-3xl md:px-10 md:py-10 md:pb-10 lg:max-w-4xl md:ml-56">
       <Link href="/clubs" className="text-sm text-accent">
         ← All clubs
       </Link>
@@ -78,6 +81,7 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ slu
       </section>
 
       {user && <BottomNav />}
-    </main>
+      </main>
+    </div>
   );
 }

@@ -116,6 +116,7 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   photoBlobUrl: text("photo_blob_url"),
+  regNo: varchar("reg_no", { length: 30 }).unique(), // e.g. "ENG-123-4567/2023" — set during profile completion
   departmentId: integer("department_id").references(() => departments.id, {
     onDelete: "set null",
   }),
@@ -179,6 +180,23 @@ export const badges = pgTable("badges", {
   approvedBy: integer("approved_by").references(() => users.id, { onDelete: "set null" }),
   approvedAt: timestamp("approved_at", { withTimezone: true }),
   adminNote: text("admin_note"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+/**
+ * Members who already hold a physical/pre-platform ESA Badge (existing membership
+ * cards, numbered before this system existed). Recorded here from the card so the
+ * number is never reissued; an admin links the row to the member's real account
+ * once they sign up, which instantly activates their badge with the same number.
+ */
+export const legacyMembers = pgTable("legacy_members", {
+  id: serial("id").primaryKey(),
+  fullName: varchar("full_name", { length: 160 }).notNull(),
+  badgeNumber: varchar("badge_number", { length: 20 }).notNull().unique(), // e.g. "ESA-1330", from their card
+  regNo: varchar("reg_no", { length: 30 }),
+  notes: text("notes"),
+  matchedUserId: integer("matched_user_id").references(() => users.id, { onDelete: "set null" }),
+  matchedAt: timestamp("matched_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -354,6 +372,10 @@ export const clubAdminsRelations = relations(clubAdmins, ({ one }) => ({
 export const badgesRelations = relations(badges, ({ one }) => ({
   user: one(users, { fields: [badges.userId], references: [users.id] }),
   approver: one(users, { fields: [badges.approvedBy], references: [users.id] }),
+}));
+
+export const legacyMembersRelations = relations(legacyMembers, ({ one }) => ({
+  matchedUser: one(users, { fields: [legacyMembers.matchedUserId], references: [users.id] }),
 }));
 
 export const eventsRelations = relations(events, ({ one }) => ({

@@ -120,6 +120,37 @@ There's no seed data and no admin account baked in. Instead:
    club committee members and additional ESA admins from **Admin console →
    Roles**.
 
+## Importing the pre-platform membership roster
+
+ESA already issued physical/Canva membership cards (name + `ESA-####` badge
+number) before this platform existed. Rather than losing that numbering or
+asking everyone to re-apply and re-pay, those members go on a **roster**
+that gets linked to their real account the first time they sign up:
+
+1. **Record each card.** Either add it one at a time in **Admin console →
+   Roster**, or — much faster for a batch of cards — append `{ "fullName",
+   "badgeNumber" }` entries to `packages/db/data/legacy-roster.json` and run:
+   ```bash
+   pnpm import-roster              # local dev (uses .env.local's DATABASE_URL)
+   DATABASE_URL="<neon url>" pnpm import-roster   # production, one-off
+   ```
+   from `packages/db/`. It's safe to re-run any time — entries whose badge
+   number is already on the roster are skipped, so you can keep appending
+   new cards to the same file as they come in and just re-run the script.
+2. **When that member signs up** (with their real email) and completes
+   their profile, they show up as an ordinary new account — nothing links
+   automatically.
+3. **An admin links the two**, in **Admin console → Roster**: find the
+   member's unlinked roster row, type the email (or reg. number) they
+   signed up with, and click **Link**. Their Badge activates immediately
+   with the *same* `ESA-####` number from their card — no re-payment, no
+   duplicate number.
+
+New badges approved the normal way (via a submitted M-Pesa code) get a
+fresh, randomly-generated `ESA-####` number that's checked against both
+the live badges table and the roster, so it can never collide with an
+imported historical number.
+
 ## Turning on email and push (optional for local dev)
 
 **Email** (verification links, Badge decisions): create a dedicated ESA

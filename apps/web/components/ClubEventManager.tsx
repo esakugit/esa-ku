@@ -2,14 +2,19 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDraft } from "@/lib/useDraft";
+
+type Draft = { title: string; description: string; location: string; startAt: string };
 
 export function ClubEventManager({ clubId }: { clubId: number }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [location, setLocation] = useState("");
-  const [startAt, setStartAt] = useState("");
+  const [form, setForm, clearDraft] = useDraft<Draft>(`club-event-${clubId}`, {
+    title: "",
+    description: "",
+    location: "",
+    startAt: "",
+  });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -21,17 +26,14 @@ export function ClubEventManager({ clubId }: { clubId: number }) {
       const res = await fetch("/api/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clubId, title, description, location, startAt }),
+        body: JSON.stringify({ clubId, ...form }),
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Something went wrong.");
         return;
       }
-      setTitle("");
-      setDescription("");
-      setLocation("");
-      setStartAt("");
+      clearDraft();
       setOpen(false);
       router.refresh();
     } catch {
@@ -52,21 +54,21 @@ export function ClubEventManager({ clubId }: { clubId: number }) {
             required
             className="field-input"
             placeholder="Event title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
           />
           <textarea
             className="field-input"
             rows={3}
             placeholder="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
           />
           <input
             className="field-input"
             placeholder="Location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            value={form.location}
+            onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
           />
           <div>
             <label className="field-label">Starts</label>
@@ -74,8 +76,8 @@ export function ClubEventManager({ clubId }: { clubId: number }) {
               required
               type="datetime-local"
               className="field-input"
-              value={startAt}
-              onChange={(e) => setStartAt(e.target.value)}
+              value={form.startAt}
+              onChange={(e) => setForm((f) => ({ ...f, startAt: e.target.value }))}
             />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}

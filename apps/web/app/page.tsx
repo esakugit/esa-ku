@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
+import { isEsaAdmin } from "@/lib/roles";
 import { db } from "@esa/db";
 import { BottomNav } from "@/components/BottomNav";
+import { SidebarNav } from "@/components/SidebarNav";
 import { NotificationBell } from "@/components/NotificationBell";
 
 export default async function HomePage() {
@@ -17,7 +19,9 @@ export default async function HomePage() {
   });
 
   return (
-    <main className="mx-auto max-w-xl px-5 pb-24 pt-8">
+    <div className="md:flex">
+      {user && <SidebarNav showAdmin={isEsaAdmin(user)} />}
+      <main className="mx-auto w-full max-w-xl px-5 pb-24 pt-8 md:max-w-3xl md:px-10 md:py-10 md:pb-10 lg:max-w-4xl md:ml-56">
       <header className="mb-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Image src="/brand/logo.png" alt="ESA-KU" width={44} height={26} priority />
@@ -49,9 +53,9 @@ export default async function HomePage() {
         </div>
       )}
 
-      {user && !user.departmentId && (
+      {user && !user.profileComplete && (
         <div className="card mb-6 flex items-center justify-between gap-4 p-5">
-          <p className="text-sm text-ink">Add your department to unlock your class timetable.</p>
+          <p className="text-sm text-ink">Finish setting up your profile to unlock your class timetable.</p>
           <Link href="/complete-profile" className="btn-primary whitespace-nowrap">
             Set up
           </Link>
@@ -108,6 +112,7 @@ export default async function HomePage() {
       </section>
 
       {user && <BottomNav />}
-    </main>
+      </main>
+    </div>
   );
 }

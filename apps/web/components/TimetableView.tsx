@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useDraft } from "@/lib/useDraft";
 
 type Department = { id: number; name: string; code: string };
 type Cohort = { id: number; departmentId: number; entryYear: number; label: string };
@@ -173,27 +174,30 @@ function AddEntryForm({
 }) {
   const [open, setOpen] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
-  const [courseId, setCourseId] = useState("");
-  const [dayOfWeek, setDayOfWeek] = useState("0");
-  const [startTime, setStartTime] = useState("08:00");
-  const [endTime, setEndTime] = useState("10:00");
-  const [venue, setVenue] = useState("");
-  const [lecturerName, setLecturerName] = useState("");
+  const [form, setForm, clearDraft] = useDraft(`timetable-entry-${cohortId}`, {
+    courseId: "",
+    dayOfWeek: "0",
+    startTime: "08:00",
+    endTime: "10:00",
+    venue: "",
+    lecturerName: "",
+  });
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       fetch(`/api/courses?departmentId=${departmentId}`).then((r) => r.json()).then((rows) => {
         setCourses(rows);
-        if (rows[0]) setCourseId(String(rows[0].id));
+        setForm((f) => (f.courseId ? f : { ...f, courseId: rows[0] ? String(rows[0].id) : "" }));
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!courseId) {
+    if (!form.courseId) {
       setError("Add a course to this department first (Admin console).");
       return;
     }
@@ -202,18 +206,17 @@ function AddEntryForm({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         cohortId,
-        courseId: Number(courseId),
-        dayOfWeek: Number(dayOfWeek),
-        startTime,
-        endTime,
-        venue,
-        lecturerName,
+        courseId: Number(form.courseId),
+        dayOfWeek: Number(form.dayOfWeek),
+        startTime: form.startTime,
+        endTime: form.endTime,
+        venue: form.venue,
+        lecturerName: form.lecturerName,
       }),
     });
     const data = await res.json();
     if (!res.ok) return setError(data.error ?? "Failed");
-    setVenue("");
-    setLecturerName("");
+    clearDraft();
     onAdded();
   }
 
@@ -224,7 +227,11 @@ function AddEntryForm({
       </button>
       {open && (
         <form onSubmit={submit} className="mt-3 space-y-3">
-          <select className="field-input" value={courseId} onChange={(e) => setCourseId(e.target.value)}>
+          <select
+            className="field-input"
+            value={form.courseId}
+            onChange={(e) => setForm((f) => ({ ...f, courseId: e.target.value }))}
+          >
             {courses.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.code} · {c.name}
@@ -232,7 +239,11 @@ function AddEntryForm({
             ))}
           </select>
           <div className="flex gap-3">
-            <select className="field-input" value={dayOfWeek} onChange={(e) => setDayOfWeek(e.target.value)}>
+            <select
+              className="field-input"
+              value={form.dayOfWeek}
+              onChange={(e) => setForm((f) => ({ ...f, dayOfWeek: e.target.value }))}
+            >
               {DAYS.map((d, i) => (
                 <option key={d} value={i}>
                   {d}
@@ -241,15 +252,30 @@ function AddEntryForm({
             </select>
           </div>
           <div className="flex gap-3">
-            <input type="time" className="field-input" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-            <input type="time" className="field-input" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+            <input
+              type="time"
+              className="field-input"
+              value={form.startTime}
+              onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))}
+            />
+            <input
+              type="time"
+              className="field-input"
+              value={form.endTime}
+              onChange={(e) => setForm((f) => ({ ...f, endTime: e.target.value }))}
+            />
           </div>
-          <input className="field-input" placeholder="Venue" value={venue} onChange={(e) => setVenue(e.target.value)} />
+          <input
+            className="field-input"
+            placeholder="Venue"
+            value={form.venue}
+            onChange={(e) => setForm((f) => ({ ...f, venue: e.target.value }))}
+          />
           <input
             className="field-input"
             placeholder="Lecturer"
-            value={lecturerName}
-            onChange={(e) => setLecturerName(e.target.value)}
+            value={form.lecturerName}
+            onChange={(e) => setForm((f) => ({ ...f, lecturerName: e.target.value }))}
           />
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button className="btn-primary w-full">Add to timetable</button>
