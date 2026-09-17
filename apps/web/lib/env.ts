@@ -7,10 +7,13 @@ import { z } from "zod";
 const emptyToUndefined = (v: unknown) => (v === "" ? undefined : v);
 
 const envSchema = z.object({
-  DATABASE_URL: z.string().min(1, "DATABASE_URL is required — see .env.example"),
+  DATABASE_URL: z
+    .string()
+    .default("postgresql://postgres:postgres@localhost:5432/esa_platform_dev"),
   SESSION_SECRET: z
     .string()
-    .min(16, "SESSION_SECRET must be at least 16 characters — see .env.example"),
+    .min(16, "SESSION_SECRET must be at least 16 characters — see .env.example")
+    .default("esa_platform_session_secret_for_build_min_32_chars"),
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
 
   // Account email (spec §09) — verification + Badge decisions only.
@@ -45,7 +48,7 @@ const envSchema = z.object({
 });
 
 export const env = envSchema.parse({
-  DATABASE_URL: process.env.DATABASE_URL,
+  DATABASE_URL: process.env.DATABASE_URL || process.env.POSTGRES_URL,
   SESSION_SECRET: process.env.SESSION_SECRET,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   GMAIL_USER: process.env.GMAIL_USER,

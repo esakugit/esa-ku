@@ -36,6 +36,13 @@
       "when": 1789667533411,
       "tag": "0004_solid_rick_jones",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789675171267,
+      "tag": "0005_shiny_baron_strucker",
+      "breakpoints": true
     }
   ]
 }

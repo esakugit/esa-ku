@@ -24,18 +24,65 @@ export default async function HomePage() {
       orderBy: (e, { asc }) => asc(e.startAt),
     })) ?? events[0];
 
+  const heroSettingsRow = await db.query.platformSettings.findFirst({
+    where: (s, { eq }) => eq(s.key, "hero"),
+  });
+
+  const heroSettings = heroSettingsRow
+    ? (JSON.parse(heroSettingsRow.value) as {
+        heroTitle?: string;
+        heroSubtitle?: string;
+        heroEyebrow?: string;
+        heroImageUrl?: string;
+      })
+    : null;
+
+  const pinnedAnnouncement = await db.query.announcements.findFirst({
+    where: (a, { eq }) => eq(a.pinned, true),
+    orderBy: (a, { desc }) => desc(a.publishedAt),
+  });
+
   return (
     <div className="min-h-screen bg-surface flex flex-col font-sans text-ink">
       {/* 1. Official Top Navigation Bar */}
       <InstitutionalHeader user={user} showAdmin={user ? isEsaAdmin(user) : false} />
 
+      {/* Pinned Official Notice Banner (if any) */}
+      {pinnedAnnouncement && (
+        <aside className="bg-accent text-white px-4 py-2 text-xs font-medium border-b border-accent-muted/40">
+          <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="rounded bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                📢 {pinnedAnnouncement.category}
+              </span>
+              <span className="font-semibold">{pinnedAnnouncement.title}:</span>
+              <span className="text-white/90 line-clamp-1">{pinnedAnnouncement.content}</span>
+            </div>
+            {pinnedAnnouncement.actionUrl ? (
+              <a
+                href={pinnedAnnouncement.actionUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded bg-white text-accent px-2.5 py-1 text-[11px] font-bold hover:bg-neutral-100 transition-colors"
+              >
+                View Notice ↗
+              </a>
+            ) : (
+              <Link href="/notifications" className="underline text-white/90 hover:text-white">
+                View in Notices →
+              </Link>
+            )}
+          </div>
+        </aside>
+      )}
+
       <main className="flex-1">
         {/* 2. Flagship Institutional Hero */}
         <section className="relative overflow-hidden border-b border-neutral-200 bg-neutral-950 text-white">
-          {/* Background schematic container */}
+          {/* Background schematic / hero image container */}
           <div
             className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity pointer-events-none"
-            style={{ backgroundImage: "url('/hero-event.svg')" }}
+            style={{ backgroundImage: `url('${heroSettings?.heroImageUrl || "/hero-event.svg"}')` }}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-neutral-950 via-neutral-950/90 to-neutral-900/75 pointer-events-none" />
 
@@ -43,16 +90,16 @@ export default async function HomePage() {
             <div className="max-w-3xl">
               {/* Clean institutional eyebrow — no box, no dot */}
               <p className="text-xs sm:text-sm font-bold uppercase tracking-widest text-accent-muted mb-3">
-                Kenyatta University &middot; School of Engineering &amp; Architecture
+                {heroSettings?.heroEyebrow || "Kenyatta University · School of Engineering & Architecture"}
               </p>
 
               <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl leading-tight">
-                Advancing Engineering Excellence, Innovation &amp; Technical Leadership
+                {heroSettings?.heroTitle || "Advancing Engineering Excellence, Innovation & Technical Leadership"}
               </h1>
 
               <p className="mt-5 text-base sm:text-lg leading-relaxed text-neutral-300">
-                The official academic and professional society representing Kenyatta University engineering
-                scholars across Civil, Electrical, Mechanical, Agricultural, and Aerospace disciplines.
+                {heroSettings?.heroSubtitle ||
+                  "The official academic and professional society representing Kenyatta University engineering scholars across Civil, Electrical, Mechanical, Agricultural, and Aerospace disciplines."}
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-3">

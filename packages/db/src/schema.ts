@@ -410,3 +410,38 @@ export const resourcesRelations = relations(resources, ({ one }) => ({
   course: one(courses, { fields: [resources.courseId], references: [courses.id] }),
   uploader: one(users, { fields: [resources.uploadedBy], references: [users.id] }),
 }));
+
+// ---------------------------------------------------------------------------
+// Announcements & Dynamic Platform Settings
+// ---------------------------------------------------------------------------
+
+export const announcements = pgTable("announcements", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  category: varchar("category", { length: 80 }).notNull().default("General"), // e.g. "General", "Academic", "Bursaries", "Events"
+  priority: varchar("priority", { length: 20 }).notNull().default("normal"), // "urgent" | "normal"
+  pinned: boolean("pinned").notNull().default(false),
+  actionUrl: text("action_url"),
+  authorId: integer("author_id").references(() => users.id, { onDelete: "set null" }),
+  publishedAt: timestamp("published_at", { withTimezone: true }).defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const announcementsRelations = relations(announcements, ({ one }) => ({
+  author: one(users, { fields: [announcements.authorId], references: [users.id] }),
+}));
+
+export const platformSettings = pgTable("platform_settings", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 80 }).notNull().unique(), // e.g. "hero"
+  value: text("value").notNull(), // JSON string storing { heroTitle, heroSubtitle, heroEyebrow, heroImageUrl, heroBadgeText }
+  updatedBy: integer("updated_by").references(() => users.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const platformSettingsRelations = relations(platformSettings, ({ one }) => ({
+  updater: one(users, { fields: [platformSettings.updatedBy], references: [users.id] }),
+}));
+

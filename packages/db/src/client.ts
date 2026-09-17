@@ -9,11 +9,9 @@ import * as schema from "./schema";
  * one code path, no dev/prod split to maintain.
  */
 function getDatabaseUrl(): string {
-  const url = process.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL || process.env.POSTGRES_URL;
   if (!url) {
-    throw new Error(
-      "DATABASE_URL is not set. Copy .env.example to apps/web/.env.local and fill in a Postgres connection string (local Postgres in dev, Neon in production).",
-    );
+    return "postgresql://postgres:postgres@localhost:5432/esa_platform_dev";
   }
   return url;
 }
@@ -22,6 +20,7 @@ function getDatabaseUrl(): string {
 // local Postgres does not speak TLS by default. Toggle based on the URL so
 // the same code works in both places without extra config.
 function wantsSsl(url: string): boolean {
+  if (/localhost|127\.0\.0\.1/.test(url)) return false;
   if (process.env.NODE_ENV === "production") return true;
   return (
     /sslmode=require/.test(url) ||

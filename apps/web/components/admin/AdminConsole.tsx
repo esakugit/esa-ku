@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { useDraft } from "@/lib/useDraft";
 import { useToast } from "@/components/Toast";
+import { SiteHeroTab } from "./SiteHeroTab";
+import { AnnouncementsTab } from "./AnnouncementsTab";
+import { EventsTab } from "./EventsTab";
 
 type Department = { id: number; name: string; code: string };
 type Course = { id: number; departmentId: number; code: string; name: string };
@@ -27,11 +30,24 @@ type LegacyMember = {
   matchedUser: { id: number; fullName: string; email: string } | null;
 };
 
-const TABS = ["Overview", "Departments", "Courses", "Clubs", "Roles", "Roster"] as const;
+const TABS = [
+  "Overview",
+  "Site & Hero",
+  "Announcements",
+  "Events",
+  "Departments",
+  "Courses",
+  "Clubs",
+  "Roles",
+  "Roster",
+] as const;
 type Tab = (typeof TABS)[number];
 
 const TAB_ICONS: Record<Tab, string> = {
   Overview: "◧",
+  "Site & Hero": "🎨",
+  Announcements: "📢",
+  Events: "📅",
   Departments: "🏛",
   Courses: "📘",
   Clubs: "🧩",
@@ -60,6 +76,9 @@ export function AdminConsole() {
       </div>
 
       {tab === "Overview" && <OverviewTab onNavigate={setTab} />}
+      {tab === "Site & Hero" && <SiteHeroTab />}
+      {tab === "Announcements" && <AnnouncementsTab />}
+      {tab === "Events" && <EventsTab />}
       {tab === "Departments" && <DepartmentsTab />}
       {tab === "Courses" && <CoursesTab />}
       {tab === "Clubs" && <ClubsTab />}
