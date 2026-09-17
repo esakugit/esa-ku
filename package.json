@@ -9,7 +9,8 @@
     "start": "pnpm --filter web start",
     "typecheck": "pnpm -r typecheck",
     "db:generate": "pnpm --filter @esa/db generate",
-    "db:migrate": "pnpm --filter @esa/db migrate"
+    "db:migrate": "pnpm --filter @esa/db migrate",
+    "db:seed": "pnpm --filter @esa/db seed"
   },
   "engines": {
     "node": ">=20"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToast } from "@/components/Toast";
 
 type PendingBadge = {
   id: number;
@@ -15,6 +16,7 @@ export function BadgeQueue() {
   const [busyId, setBusyId] = useState<number | null>(null);
   const [notes, setNotes] = useState<Record<number, string>>({});
   const [loaded, setLoaded] = useState(false);
+  const { success, error, info } = useToast();
 
   const load = () =>
     fetch("/api/badges")
@@ -29,13 +31,20 @@ export function BadgeQueue() {
   }, []);
 
   async function decide(id: number, decision: "approve" | "reject") {
+    const student = rows.find((b) => b.id === id)?.user.fullName ?? "Student";
     setBusyId(id);
-    await fetch(`/api/badges/${id}/decision`, {
+    const res = await fetch(`/api/badges/${id}/decision`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ decision, note: notes[id] }),
     });
     setBusyId(null);
+    if (res.ok) {
+      if (decision === "approve") success("Badge approved", `${student}'s Badge is now active.`);
+      else info("Badge rejected", `${student} has been notified.`);
+    } else {
+      error("That didn't go through", "Please try again.");
+    }
     load();
   }
 

@@ -4,7 +4,8 @@ import { db } from "@esa/db";
 import { getCurrentUser } from "@/lib/auth";
 import { isClubAdminFor, isEsaAdmin } from "@/lib/roles";
 import { BottomNav } from "@/components/BottomNav";
-import { SidebarNav } from "@/components/SidebarNav";
+import { InstitutionalHeader } from "@/components/InstitutionalHeader";
+import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 import { ClubEventManager } from "@/components/ClubEventManager";
 import { FollowClubButton } from "@/components/FollowClubButton";
 
@@ -23,65 +24,108 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ slu
   });
 
   return (
-    <div className="md:flex">
-      {user && <SidebarNav showAdmin={isEsaAdmin(user)} />}
-      <main className="mx-auto w-full max-w-xl px-5 pb-24 pt-8 md:max-w-3xl md:px-10 md:py-10 md:pb-10 lg:max-w-4xl md:ml-56">
-      <Link href="/clubs" className="text-sm text-accent">
-        ← All clubs
-      </Link>
+    <div className="min-h-screen bg-surface flex flex-col font-sans text-ink">
+      <InstitutionalHeader user={user} showAdmin={user ? isEsaAdmin(user) : false} />
+      <main className="flex-1 mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+        <Link href="/clubs" className="text-xs font-semibold text-accent hover:underline mb-4 inline-block">
+          ← Back to All Chapters & Clubs
+        </Link>
 
-      <header className="my-4">
-        <h1 className="text-2xl font-bold text-ink">
-          {club.name} {club.isPlatformOwner && <span className="badge-pill ml-1">ESA</span>}
-        </h1>
-        {club.category && <p className="mt-1 text-sm text-neutral-500">{club.category}</p>}
-        {club.description && <p className="mt-3 text-sm text-neutral-600">{club.description}</p>}
-        {club.externalUrl && (
-          <a
-            href={club.externalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-secondary mt-4 inline-flex"
-          >
-            Visit club site ↗
-          </a>
-        )}
-        <div>
-          <FollowClubButton clubId={club.id} isLoggedIn={Boolean(user)} hasActiveBadge={user?.hasActiveBadge ?? false} />
-        </div>
-      </header>
+        <header className="card p-6 sm:p-8 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-ink">
+                  {club.name}
+                </h1>
+                {club.isPlatformOwner && (
+                  <span className="badge-pill ml-1 !text-xs">ESA Lead</span>
+                )}
+              </div>
+              {club.category && (
+                <p className="mt-1 text-xs font-semibold text-accent uppercase tracking-wider">
+                  {club.category}
+                </p>
+              )}
+            </div>
 
-      {canManage && <ClubEventManager clubId={club.id} />}
+            <div className="flex items-center gap-2">
+              <FollowClubButton
+                clubId={club.id}
+                isLoggedIn={Boolean(user)}
+                hasActiveBadge={user?.hasActiveBadge ?? false}
+              />
+              {club.externalUrl && (
+                <a
+                  href={club.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-secondary !text-xs font-semibold"
+                >
+                  External Site ↗
+                </a>
+              )}
+            </div>
+          </div>
 
-      <section className="mt-6">
-        <h2 className="mb-3 text-sm font-semibold text-neutral-700">Events</h2>
-        <ul className="space-y-3">
-          {events.map((e) => (
-            <li key={e.id} className="card p-4">
-              <p className="text-sm font-semibold text-ink">{e.title}</p>
-              <p className="mt-1 text-xs text-neutral-500">
-                {new Date(e.startAt).toLocaleString("en-KE", {
-                  weekday: "short",
-                  day: "numeric",
-                  month: "short",
-                  hour: "numeric",
-                  minute: "2-digit",
-                })}
-                {e.location ? ` · ${e.location}` : ""}
-              </p>
-              {e.description && <p className="mt-2 text-sm text-neutral-600">{e.description}</p>}
-            </li>
-          ))}
-          {events.length === 0 && (
-            <p className="rounded-lg border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-400">
-              No events posted yet.
+          {club.description && (
+            <p className="mt-4 text-xs sm:text-sm leading-relaxed text-neutral-600 max-w-3xl">
+              {club.description}
             </p>
           )}
-        </ul>
-      </section>
+        </header>
 
-      {user && <BottomNav />}
+        {canManage && (
+          <div className="mb-8">
+            <ClubEventManager clubId={club.id} />
+          </div>
+        )}
+
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-bold text-ink">Scheduled Events & Activities</h2>
+            <span className="text-xs text-neutral-500">{events.length} event(s)</span>
+          </div>
+
+          <ul className="space-y-3">
+            {events.map((e) => (
+              <li key={e.id} className="card p-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-base font-bold text-ink">{e.title}</h3>
+                    {e.description && (
+                      <p className="mt-1 text-xs text-neutral-600">{e.description}</p>
+                    )}
+                  </div>
+                  <div className="text-left sm:text-right text-xs text-neutral-500 whitespace-nowrap">
+                    <p className="font-semibold text-accent">
+                      {new Date(e.startAt).toLocaleDateString("en-KE", {
+                        weekday: "short",
+                        day: "numeric",
+                        month: "short",
+                      })}
+                    </p>
+                    <p>
+                      {new Date(e.startAt).toLocaleTimeString("en-KE", {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                      {e.location ? ` · ${e.location}` : ""}
+                    </p>
+                  </div>
+                </div>
+              </li>
+            ))}
+            {events.length === 0 && (
+              <li className="card p-8 text-center text-xs text-neutral-500">
+                No events currently published by this chapter.
+              </li>
+            )}
+          </ul>
+        </section>
       </main>
+      <InstitutionalFooter />
+      {user && <BottomNav />}
     </div>
   );
 }

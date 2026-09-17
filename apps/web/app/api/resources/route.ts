@@ -3,7 +3,7 @@ import { db, resources } from "@esa/db";
 import { requireApiUser, isResponse } from "@/lib/api";
 import { saveFile } from "@/lib/storage";
 
-const MAX_BYTES = 25 * 1024 * 1024; // 25MB — comfortably inside Vercel's request body limits
+const MAX_BYTES = 4.5 * 1024 * 1024; // 4.5MB — strict Vercel Serverless request body limit
 
 /** Browse the library — everyone (with an account) sees only approved uploads. */
 export async function GET(req: Request) {
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid resource type." }, { status: 400 });
   }
   if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: "File is too large (25MB max)." }, { status: 400 });
+    return NextResponse.json({ error: "File is too large (4.5MB max)." }, { status: 400 });
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());

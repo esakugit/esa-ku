@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { isEsaAdmin } from "@/lib/roles";
 import { BottomNav } from "@/components/BottomNav";
-import { SidebarNav } from "@/components/SidebarNav";
+import { InstitutionalHeader } from "@/components/InstitutionalHeader";
+import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 import { ResourceModerationQueue } from "@/components/admin/ResourceModerationQueue";
 
 export default async function AdminResourcesPage() {
@@ -11,18 +13,28 @@ export default async function AdminResourcesPage() {
   if (!isEsaAdmin(user)) redirect("/");
 
   return (
-    <div className="md:flex">
-      <SidebarNav showAdmin={true} />
-      <main className="mx-auto w-full max-w-2xl px-5 pb-24 pt-8 md:max-w-3xl md:px-10 md:py-10 md:pb-10 lg:max-w-4xl md:ml-56">
-      <header className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-wide text-accent">ESA admin</p>
-        <h1 className="mt-0.5 text-2xl font-bold text-ink">Resource moderation</h1>
-        <p className="mt-1 text-sm text-neutral-500">Review uploads before they appear in the library.</p>
-      </header>
+    <div className="min-h-screen bg-surface flex flex-col font-sans text-ink">
+      <InstitutionalHeader user={user} showAdmin={true} />
+      <main className="flex-1 mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <header className="mb-8">
+          <div className="flex items-center gap-2 mb-2 text-xs">
+            <Link href="/admin" className="text-neutral-500 hover:text-ink">
+              ← Admin Console
+            </Link>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
+            Academic Resource Moderation Queue
+          </h1>
+          <p className="mt-1 text-xs sm:text-sm text-neutral-600">
+            Review and approve uploaded examination papers, lecture notes, and lab manuals before publishing
+            them to the public Academic Vault.
+          </p>
+        </header>
 
-      <ResourceModerationQueue />
-      <BottomNav />
+        <ResourceModerationQueue />
       </main>
+      <InstitutionalFooter />
+      <BottomNav />
     </div>
   );
 }

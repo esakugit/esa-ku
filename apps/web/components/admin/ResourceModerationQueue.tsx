@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToast } from "@/components/Toast";
 
 type PendingResource = {
   id: number;
@@ -16,6 +17,7 @@ type PendingResource = {
 export function ResourceModerationQueue() {
   const [rows, setRows] = useState<PendingResource[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const { success, error, info } = useToast();
 
   const load = () =>
     fetch("/api/resources/pending")
@@ -30,11 +32,18 @@ export function ResourceModerationQueue() {
   }, []);
 
   async function decide(id: number, decision: "approve" | "reject") {
-    await fetch(`/api/resources/${id}/moderate`, {
+    const title = rows.find((r) => r.id === id)?.title ?? "Resource";
+    const res = await fetch(`/api/resources/${id}/moderate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ decision }),
     });
+    if (res.ok) {
+      if (decision === "approve") success("Resource published", `"${title}" is now visible to students.`);
+      else info("Resource rejected", `"${title}" was rejected.`);
+    } else {
+      error("That didn't go through", "Please try again.");
+    }
     load();
   }
 

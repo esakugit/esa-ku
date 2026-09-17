@@ -195,6 +195,9 @@ export const legacyMembers = pgTable("legacy_members", {
   badgeNumber: varchar("badge_number", { length: 20 }).notNull().unique(), // e.g. "ESA-1330", from their card
   regNo: varchar("reg_no", { length: 30 }),
   notes: text("notes"),
+  // Scan of their physical/Canva membership card — shown on their profile once
+  // this roster row is linked to their real account (see the /match route).
+  cardImageUrl: text("card_image_url"),
   matchedUserId: integer("matched_user_id").references(() => users.id, { onDelete: "set null" }),
   matchedAt: timestamp("matched_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -215,6 +218,8 @@ export const events = pgTable("events", {
   startAt: timestamp("start_at", { withTimezone: true }).notNull(),
   endAt: timestamp("end_at", { withTimezone: true }),
   coverImageBlobUrl: text("cover_image_blob_url"),
+  registrationUrl: text("registration_url"),
+  isFeatured: boolean("is_featured").notNull().default(false),
   createdBy: integer("created_by")
     .references(() => users.id, { onDelete: "set null" }),
   publishedAt: timestamp("published_at", { withTimezone: true }),

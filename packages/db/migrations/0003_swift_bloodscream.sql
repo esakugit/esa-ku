@@ -1,0 +1,1 @@
+ALTER TABLE "legacy_members" ADD COLUMN "card_image_url" text;

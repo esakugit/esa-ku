@@ -4,17 +4,18 @@ import { getCurrentUser } from "@/lib/auth";
 import { isEsaAdmin } from "@/lib/roles";
 import { SignOutButton } from "@/components/SignOutButton";
 import { BottomNav } from "@/components/BottomNav";
-import { SidebarNav } from "@/components/SidebarNav";
+import { InstitutionalHeader } from "@/components/InstitutionalHeader";
+import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 import { BadgeSection } from "@/components/BadgeSection";
 import { PushSubscribeToggle } from "@/components/PushSubscribeToggle";
 import { env } from "@/lib/env";
 
 const ROLE_LABELS: Record<string, string> = {
-  student: "Student",
-  class_rep: "Class representative",
-  club_admin: "Club committee member",
-  esa_admin: "ESA admin",
-  super_admin: "Super admin",
+  student: "Engineering Scholar",
+  class_rep: "Class Representative",
+  club_admin: "Chapter Executive",
+  esa_admin: "ESA Administrator",
+  super_admin: "Super Administrator",
 };
 
 function initials(fullName: string): string {
@@ -27,28 +28,47 @@ export default async function ProfilePage() {
   if (!user) redirect("/login");
 
   return (
-    <div className="md:flex">
-      <SidebarNav showAdmin={isEsaAdmin(user)} />
-      <main className="mx-auto w-full max-w-xl px-5 pb-24 pt-8 md:max-w-3xl md:px-10 md:py-10 md:pb-10 lg:max-w-4xl md:ml-56">
-        <div className="md:grid md:grid-cols-[minmax(0,1fr)_20rem] md:items-start md:gap-8">
-          <div className="min-w-0">
-            {/* Identity header */}
-            <div className="mb-6 flex items-center gap-4">
-              <div className="flex h-16 w-16 flex-none items-center justify-center rounded-full bg-gradient-to-br from-accent to-brandgreen text-lg font-bold text-white shadow-sm">
+    <div className="min-h-screen bg-surface flex flex-col font-sans text-ink">
+      <InstitutionalHeader user={user} showAdmin={isEsaAdmin(user)} />
+      <main className="flex-1 mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-6">
+          <span className="text-xs font-bold uppercase tracking-wider text-accent">Member Accreditation</span>
+          <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-ink">
+            Membership Portal & Digital Badge
+          </h1>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Identity card */}
+            <div className="card p-6 flex flex-col sm:flex-row sm:items-center gap-5">
+              <div className="flex h-16 w-16 flex-none items-center justify-center rounded-lg bg-neutral-900 text-lg font-bold text-white shadow-xs">
                 {initials(user.fullName)}
               </div>
               <div className="min-w-0">
-                <h1 className="truncate text-xl font-bold text-ink">{user.fullName}</h1>
-                <p className="truncate text-sm text-neutral-500">{user.email}</p>
-                <span className="badge-pill mt-1.5">{ROLE_LABELS[user.role] ?? user.role}</span>
+                <h2 className="truncate text-xl font-bold text-ink">{user.fullName}</h2>
+                <p className="truncate text-xs text-neutral-500">{user.email}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="badge-pill !text-xs">{ROLE_LABELS[user.role] ?? user.role}</span>
+                  {user.regNo && (
+                    <span className="rounded bg-neutral-100 px-2 py-0.5 font-mono text-xs text-neutral-700">
+                      {user.regNo}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
             {!user.profileComplete && (
-              <div className="card mb-6 flex items-center justify-between gap-4 border-flag/30 bg-flag-soft p-4">
-                <p className="text-sm text-ink">Finish setting up your profile to see your class timetable.</p>
-                <Link href="/complete-profile" className="btn-primary whitespace-nowrap">
-                  Complete
+              <div className="card flex items-center justify-between gap-4 border-flag/30 bg-flag-soft p-5">
+                <div>
+                  <p className="text-sm font-semibold text-ink">Complete Academic Profile</p>
+                  <p className="mt-0.5 text-xs text-neutral-600">
+                    Set your engineering department and cohort year to access localized schedules.
+                  </p>
+                </div>
+                <Link href="/complete-profile" className="btn-primary !text-xs whitespace-nowrap">
+                  Set Details
                 </Link>
               </div>
             )}
@@ -59,55 +79,72 @@ export default async function ProfilePage() {
               badgeNumber={user.badgeNumber}
               tillNumber={env.NEXT_PUBLIC_ESA_TILL_NUMBER}
               tillName={env.NEXT_PUBLIC_ESA_TILL_NAME}
+              badgeFee={env.NEXT_PUBLIC_ESA_BADGE_FEE}
+              legacyCardImageUrl={user.legacyCardImageUrl}
             />
 
             {user.hasActiveBadge && (
-              <div className="card mb-6 p-5">
-                <p className="mb-1 text-sm font-semibold text-ink">Notifications</p>
-                <p className="mb-3 text-sm text-neutral-500">
-                  Get a push alert on this device for class and event reminders.
+              <div className="card p-6">
+                <h3 className="text-sm font-bold text-ink">Automated Academic Alerts</h3>
+                <p className="mt-1 text-xs text-neutral-500">
+                  Receive instant browser push notifications for class notices, venue changes, and symposia.
                 </p>
-                <PushSubscribeToggle />
+                <div className="mt-4">
+                  <PushSubscribeToggle />
+                </div>
               </div>
             )}
           </div>
 
-          {/* Right column on desktop, falls below on mobile */}
-          <div className="min-w-0">
-            <SectionLabel>Account details</SectionLabel>
-            <div className="card mb-6 divide-y divide-neutral-100">
-              <DetailRow label="Reg. number" value={user.regNo ?? "Not set"} muted={!user.regNo} />
-              <DetailRow label="Email verified" value={user.emailVerifiedAt ? "Verified" : "Not verified"} good={Boolean(user.emailVerifiedAt)} />
+          {/* Right column / institutional settings */}
+          <div className="space-y-6">
+            <div>
+              <SectionLabel>Student Accreditation</SectionLabel>
+              <div className="card divide-y divide-neutral-100">
+                <DetailRow label="Registration No." value={user.regNo ?? "Pending Setup"} muted={!user.regNo} />
+                <DetailRow
+                  label="Institutional Email"
+                  value={user.emailVerifiedAt ? "Verified" : "Pending Verification"}
+                  good={Boolean(user.emailVerifiedAt)}
+                />
+                <DetailRow
+                  label="Badge Status"
+                  value={user.hasActiveBadge ? `Active (${user.badgeNumber})` : "Unregistered"}
+                  good={user.hasActiveBadge}
+                />
+              </div>
             </div>
 
-            <SectionLabel>Settings</SectionLabel>
-            <div className="card mb-6 divide-y divide-neutral-100 overflow-hidden">
-              {isEsaAdmin(user) && <SettingsRow href="/admin" label="Admin console" />}
-              {user.profileComplete && (
-                <SettingsRow href="/complete-profile" label="Department, intake & reg. number" />
-              )}
-              <SignOutButton variant="row" />
+            <div>
+              <SectionLabel>Account Controls</SectionLabel>
+              <div className="card divide-y divide-neutral-100 overflow-hidden">
+                {isEsaAdmin(user) && <SettingsRow href="/admin" label="Administrative Console" />}
+                {user.profileComplete && (
+                  <SettingsRow href="/complete-profile" label="Update Academic Department" />
+                )}
+                <SignOutButton variant="row" />
+              </div>
             </div>
           </div>
         </div>
-
-        <BottomNav />
       </main>
+      <InstitutionalFooter />
+      <BottomNav />
     </div>
   );
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <p className="mb-2 mt-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">{children}</p>;
+  return <p className="mb-2 text-xs font-bold uppercase tracking-wider text-neutral-500">{children}</p>;
 }
 
 function DetailRow({ label, value, muted, good }: { label: string; value: string; muted?: boolean; good?: boolean }) {
   return (
-    <div className="flex items-center justify-between px-5 py-3.5">
-      <span className="text-sm text-neutral-500">{label}</span>
+    <div className="flex items-center justify-between px-5 py-3 text-xs">
+      <span className="text-neutral-500 font-medium">{label}</span>
       <span
         className={
-          "text-sm font-medium " +
+          "font-semibold " +
           (muted ? "text-neutral-400" : good === true ? "text-brandgreen" : good === false ? "text-flag" : "text-ink")
         }
       >
@@ -119,10 +156,10 @@ function DetailRow({ label, value, muted, good }: { label: string; value: string
 
 function SettingsRow({ href, label }: { href: string; label: string }) {
   return (
-    <Link href={href} className="flex items-center justify-between px-5 py-3.5 text-sm font-medium text-ink transition-colors hover:bg-neutral-50">
+    <Link href={href} className="flex items-center justify-between px-5 py-3 text-xs font-semibold text-neutral-800 transition-colors hover:bg-neutral-50">
       {label}
-      <span aria-hidden className="text-neutral-300">
-        ›
+      <span aria-hidden className="text-neutral-400 font-normal">
+        →
       </span>
     </Link>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useDraft } from "@/lib/useDraft";
+import { useToast } from "@/components/Toast";
 
 type Department = { id: number; name: string; code: string };
 type Course = { id: number; departmentId: number; code: string; name: string };
@@ -21,15 +22,25 @@ type LegacyMember = {
   badgeNumber: string;
   regNo: string | null;
   notes: string | null;
+  cardImageUrl: string | null;
   matchedUserId: number | null;
   matchedUser: { id: number; fullName: string; email: string } | null;
 };
 
-const TABS = ["Departments", "Courses", "Clubs", "Roles", "Roster"] as const;
+const TABS = ["Overview", "Departments", "Courses", "Clubs", "Roles", "Roster"] as const;
 type Tab = (typeof TABS)[number];
 
+const TAB_ICONS: Record<Tab, string> = {
+  Overview: "◧",
+  Departments: "🏛",
+  Courses: "📘",
+  Clubs: "🧩",
+  Roles: "🛡",
+  Roster: "🗂",
+};
+
 export function AdminConsole() {
-  const [tab, setTab] = useState<Tab>("Departments");
+  const [tab, setTab] = useState<Tab>("Overview");
 
   return (
     <div>
@@ -38,21 +49,127 @@ export function AdminConsole() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
               tab === t ? "bg-white text-ink shadow-sm" : "text-neutral-500 hover:text-ink"
             }`}
           >
+            <span aria-hidden="true">{TAB_ICONS[t]}</span>
             {t}
           </button>
         ))}
       </div>
 
+      {tab === "Overview" && <OverviewTab onNavigate={setTab} />}
       {tab === "Departments" && <DepartmentsTab />}
       {tab === "Courses" && <CoursesTab />}
       {tab === "Clubs" && <ClubsTab />}
       {tab === "Roles" && <RolesTab />}
       {tab === "Roster" && <RosterTab />}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Overview — a real, API-backed snapshot (not mock data): pending queues that
+// need attention, plus running totals for the catalog you manage below.
+// ---------------------------------------------------------------------------
+
+type OverviewCounts = {
+  departments: number;
+  courses: number;
+  clubs: number;
+  pendingBadges: number;
+  pendingResources: number;
+  unlinkedRoster: number;
+};
+
+function OverviewTab({ onNavigate }: { onNavigate: (t: Tab) => void }) {
+  const [counts, setCounts] = useState<OverviewCounts | null>(null);
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/departments").then((r) => r.json()),
+      fetch("/api/courses").then((r) => r.json()),
+      fetch("/api/clubs").then((r) => r.json()),
+      fetch("/api/badges").then((r) => r.json()),
+      fetch("/api/resources/pending").then((r) => r.json()),
+      fetch("/api/legacy-members?unmatched=true").then((r) => r.json()),
+    ]).then(([departments, courses, clubs, badges, resources, roster]) => {
+      setCounts({
+        departments: departments.length,
+        courses: courses.length,
+        clubs: clubs.length,
+        pendingBadges: badges.length,
+        pendingResources: resources.length,
+        unlinkedRoster: roster.length,
+      });
+    });
+  }, []);
+
+  const needsAttention = [
+    { label: "Pending Badge applications", value: counts?.pendingBadges, tab: "Roles" as Tab, href: "/admin/badges" },
+    { label: "Uploads awaiting moderation", value: counts?.pendingResources, tab: "Roles" as Tab, href: "/admin/resources" },
+    { label: "Unlinked roster entries", value: counts?.unlinkedRoster, tab: "Roster" as Tab },
+  ];
+
+  const catalog = [
+    { label: "Departments", value: counts?.departments, tab: "Departments" as Tab },
+    { label: "Courses", value: counts?.courses, tab: "Courses" as Tab },
+    { label: "Clubs", value: counts?.clubs, tab: "Clubs" as Tab },
+  ];
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">Needs attention</p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {needsAttention.map((s) => (
+            <StatCard key={s.label} {...s} />
+          ))}
+        </div>
+      </div>
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">Catalog</p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {catalog.map((s) => (
+            <StatCard key={s.label} {...s} onClick={() => onNavigate(s.tab)} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  href,
+  onClick,
+}: {
+  label: string;
+  value: number | undefined;
+  tab?: Tab;
+  href?: string;
+  onClick?: () => void;
+}) {
+  const content = (
+    <>
+      <p className="text-2xl font-bold text-ink">{value ?? "–"}</p>
+      <p className="mt-0.5 text-xs text-neutral-500">{label}</p>
+    </>
+  );
+  const className = "stat-card block text-left transition-shadow hover:shadow-card-hover";
+  if (href) {
+    return (
+      <a href={href} className={className}>
+        {content}
+      </a>
+    );
+  }
+  return (
+    <button onClick={onClick} className={className}>
+      {content}
+    </button>
   );
 }
 
@@ -70,6 +187,7 @@ function DepartmentsTab() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<DeptDraft>({ name: "", code: "" });
   const [editError, setEditError] = useState<string | null>(null);
+  const { success, info } = useToast();
 
   const load = () => fetch("/api/departments").then((r) => r.json()).then(setRows);
   useEffect(() => {
@@ -89,11 +207,13 @@ function DepartmentsTab() {
     setLoading(false);
     if (!res.ok) return setError(data.error ?? "Failed");
     clearDraft();
+    success("Department added", data.name);
     load();
   }
 
   async function remove(id: number) {
     await fetch(`/api/departments/${id}`, { method: "DELETE" });
+    info("Department removed");
     load();
   }
 
@@ -113,6 +233,7 @@ function DepartmentsTab() {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) return setEditError(data.error ?? "Failed to save.");
     setEditingId(null);
+    success("Department updated");
     load();
   }
 
@@ -205,6 +326,7 @@ function CoursesTab() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<CourseDraft>({ code: "", name: "" });
   const [editError, setEditError] = useState<string | null>(null);
+  const { success, info } = useToast();
 
   useEffect(() => {
     fetch("/api/departments").then((r) => r.json()).then((d: Department[]) => {
@@ -234,11 +356,13 @@ function CoursesTab() {
     const data = await res.json();
     if (!res.ok) return setError(data.error ?? "Failed");
     clearDraft();
+    success("Course added", data.code);
     load(departmentId);
   }
 
   async function remove(id: number) {
     await fetch(`/api/courses/${id}`, { method: "DELETE" });
+    info("Course removed");
     load(departmentId);
   }
 
@@ -258,6 +382,7 @@ function CoursesTab() {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) return setEditError(data.error ?? "Failed to save.");
     setEditingId(null);
+    success("Course updated");
     load(departmentId);
   }
 
@@ -367,6 +492,7 @@ function ClubsTab() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<ClubDraft>({ name: "", category: "", externalUrl: "", description: "" });
   const [editError, setEditError] = useState<string | null>(null);
+  const { success, error: toastError, info } = useToast();
 
   const load = () => fetch("/api/clubs").then((r) => r.json()).then(setRows);
   useEffect(() => {
@@ -384,11 +510,13 @@ function ClubsTab() {
     const data = await res.json();
     if (!res.ok) return setError(data.error ?? "Failed");
     clearDraft();
+    success("Club added", data.name);
     load();
   }
 
   async function remove(id: number) {
     await fetch(`/api/clubs/${id}`, { method: "DELETE" });
+    info("Club removed");
     load();
   }
 
@@ -400,7 +528,12 @@ function ClubsTab() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, level: "editor" }),
     });
-    if (res.ok) setAdminEmail((s) => ({ ...s, [clubId]: "" }));
+    if (res.ok) {
+      setAdminEmail((s) => ({ ...s, [clubId]: "" }));
+      success("Committee member added");
+    } else {
+      toastError("Couldn't add that admin", "Check the email and try again.");
+    }
   }
 
   function startEdit(c: Club) {
@@ -424,6 +557,7 @@ function ClubsTab() {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) return setEditError(data.error ?? "Failed to save.");
     setEditingId(null);
+    success("Club updated");
     load();
   }
 
@@ -560,6 +694,7 @@ function RolesTab() {
     { id: number; fullName: string; email: string; role: string }[]
   >([]);
   const [status, setStatus] = useState<string | null>(null);
+  const { success, error: toastError } = useToast();
 
   async function search(query: string) {
     setQ(query);
@@ -576,8 +711,13 @@ function RolesTab() {
       body: JSON.stringify({ role }),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) return setStatus(data.error ?? "Failed to update role.");
+    if (!res.ok) {
+      setStatus(data.error ?? "Failed to update role.");
+      toastError("Couldn't update role", data.error);
+      return;
+    }
     setStatus("Role updated.");
+    success("Role updated");
     search(q);
   }
 
@@ -640,6 +780,8 @@ function RosterTab() {
   const [loading, setLoading] = useState(false);
   const [matchInputs, setMatchInputs] = useState<Record<number, string>>({});
   const [matchStatus, setMatchStatus] = useState<Record<number, string>>({});
+  const [uploadingId, setUploadingId] = useState<number | null>(null);
+  const { success, error: toastError, info } = useToast();
 
   const load = () => fetch("/api/legacy-members").then((r) => r.json()).then(setRows);
   useEffect(() => {
@@ -664,11 +806,13 @@ function RosterTab() {
     setLoading(false);
     if (!res.ok) return setError(data.error ?? "Failed");
     clearDraft();
+    success("Added to roster", `${data.fullName} · ${data.badgeNumber}`);
     load();
   }
 
   async function remove(id: number) {
     await fetch(`/api/legacy-members/${id}`, { method: "DELETE" });
+    info("Roster entry removed");
     load();
   }
 
@@ -684,9 +828,26 @@ function RosterTab() {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       setMatchStatus((m) => ({ ...m, [id]: data.error ?? "Failed to link." }));
+      toastError("Couldn't link", data.error);
       return;
     }
+    success("Linked", "Badge is now active.");
     load();
+  }
+
+  async function uploadCard(id: number, file: File) {
+    setUploadingId(id);
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`/api/legacy-members/${id}/card`, { method: "POST", body: form });
+    const data = await res.json().catch(() => ({}));
+    setUploadingId(null);
+    if (!res.ok) {
+      toastError("Upload failed", data.error ?? "Please try again.");
+      return;
+    }
+    success("Card image saved", "It will show on their profile once linked.");
+    setRows((rs) => rs.map((r) => (r.id === id ? { ...r, cardImageUrl: data.cardImageUrl } : r)));
   }
 
   const visible = rows.filter((r) => showMatched || !r.matchedUserId);
@@ -740,25 +901,57 @@ function RosterTab() {
 
       <ul className="space-y-2 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
         {visible.map((r) => (
-          <li key={r.id} className="card space-y-2 p-4">
+          <li key={r.id} className="card-interactive space-y-2 p-4">
             <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="text-sm font-semibold text-ink">{r.fullName}</p>
-                <p className="text-xs text-neutral-500">
-                  {r.badgeNumber}
-                  {r.regNo ? ` · ${r.regNo}` : ""}
-                </p>
+              <div className="flex items-start gap-3">
+                {r.cardImageUrl ? (
+                  <img
+                    src={r.cardImageUrl}
+                    alt=""
+                    className="h-12 w-12 flex-none rounded-md object-cover ring-1 ring-neutral-200"
+                  />
+                ) : (
+                  <div className="flex h-12 w-12 flex-none items-center justify-center rounded-md bg-neutral-100 text-[10px] text-neutral-400 ring-1 ring-neutral-200">
+                    No card
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-semibold text-ink">{r.fullName}</p>
+                  <p className="mt-0.5 text-xs text-neutral-500">
+                    {r.badgeNumber}
+                    {r.regNo ? ` · ${r.regNo}` : ""}
+                  </p>
+                  <label className="mt-1 inline-block cursor-pointer text-xs text-accent hover:underline">
+                    {uploadingId === r.id ? "Uploading…" : r.cardImageUrl ? "Replace card image" : "Upload card image"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={uploadingId === r.id}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (file) uploadCard(r.id, file);
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
-              {!r.matchedUserId && (
-                <button onClick={() => remove(r.id)} className="text-xs text-red-600 hover:underline">
-                  Remove
-                </button>
-              )}
+              <div className="flex shrink-0 items-center gap-2">
+                <span className={r.matchedUserId ? "status-pill-linked" : "status-pill-unlinked"}>
+                  {r.matchedUserId ? "Linked" : "Unlinked"}
+                </span>
+                {!r.matchedUserId && (
+                  <button onClick={() => remove(r.id)} className="text-xs text-red-600 hover:underline">
+                    Remove
+                  </button>
+                )}
+              </div>
             </div>
 
             {r.matchedUserId ? (
-              <p className="text-xs text-brandgreen">
-                Linked to {r.matchedUser?.fullName} ({r.matchedUser?.email})
+              <p className="text-xs text-neutral-500">
+                {r.matchedUser?.fullName} ({r.matchedUser?.email})
               </p>
             ) : (
               <div className="flex gap-2">

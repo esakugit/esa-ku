@@ -33,6 +33,8 @@ const createSchema = z.object({
   startAt: z.string().datetime().or(z.string().min(1)),
   endAt: z.string().datetime().or(z.string().min(1)).optional(),
   coverImageBlobUrl: z.string().url().optional().or(z.literal("")),
+  registrationUrl: z.string().url().optional().or(z.literal("")),
+  isFeatured: z.boolean().optional(),
 });
 
 export async function POST(req: Request) {
@@ -60,6 +62,8 @@ export async function POST(req: Request) {
       startAt: new Date(parsed.data.startAt),
       endAt: parsed.data.endAt ? new Date(parsed.data.endAt) : null,
       coverImageBlobUrl: parsed.data.coverImageBlobUrl || null,
+      registrationUrl: parsed.data.registrationUrl || null,
+      isFeatured: Boolean(parsed.data.isFeatured),
       createdBy: user.id,
       publishedAt: new Date(),
     })

@@ -22,16 +22,42 @@ function getDatabaseUrl(): string {
 // local Postgres does not speak TLS by default. Toggle based on the URL so
 // the same code works in both places without extra config.
 function wantsSsl(url: string): boolean {
-  return /sslmode=require/.test(url) || /neon\.tech/.test(url);
+  if (process.env.NODE_ENV === "production") return true;
+  return (
+    /sslmode=require/.test(url) ||
+    /neon\.tech/.test(url) ||
+    /supabase\./.test(url) ||
+    /render\.com/.test(url) ||
+    /railway\.app/.test(url) ||
+    /pooler\.supabase\.com/.test(url)
+  );
 }
 
 const connectionString = getDatabaseUrl();
 
-const pool = new Pool({
-  connectionString,
-  ssl: wantsSsl(connectionString) ? { rejectUnauthorized: false } : false,
-  max: 10,
-});
+declare global {
+  // eslint-disable-next-line no-var
+  var __esa_pg_pool: Pool | undefined;
+  // eslint-disable-next-line no-var
+  var __esa_drizzle_db: ReturnType<typeof drizzle<typeof schema>> | undefined;
+}
 
-export const db = drizzle(pool, { schema });
+const pool =
+  globalThis.__esa_pg_pool ??
+  new Pool({
+    connectionString,
+    ssl: wantsSsl(connectionString) ? { rejectUnauthorized: false } : false,
+    max: 10,
+  });
+
+if (process.env.NODE_ENV !== "production") {
+  globalThis.__esa_pg_pool = pool;
+}
+
+export const db = globalThis.__esa_drizzle_db ?? drizzle(pool, { schema });
+
+if (process.env.NODE_ENV !== "production") {
+  globalThis.__esa_drizzle_db = db;
+}
+
 export type Database = typeof db;

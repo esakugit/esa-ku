@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="600" viewBox="0 0 1440 600" fill="none">
+  <defs>
+    <linearGradient id="engGrad" x1="0" y1="0" x2="1440" y2="600" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0a0f1d"/>
+      <stop offset="50%" stop-color="#111c38"/>
+      <stop offset="100%" stop-color="#070b14"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+      <circle cx="40" cy="40" r="1.5" fill="rgba(69, 137, 255, 0.2)"/>
+    </pattern>
+    <linearGradient id="circuitGlow" x1="0" y1="0" x2="1000" y2="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2E3F92" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0062FF" stop-opacity="0.1"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1440" height="600" fill="url(#engGrad)"/>
+  <rect width="1440" height="600" fill="url(#grid)"/>
+
+  <!-- Engineering Geometric Vectors & Schematics -->
+  <g stroke="rgba(69, 137, 255, 0.18)" stroke-width="1.5" fill="none">
+    <path d="M 100 500 L 350 250 L 600 500 Z" />
+    <circle cx="350" cy="250" r="80" stroke-dasharray="6 6"/>
+    <circle cx="350" cy="250" r="120" stroke-opacity="0.08"/>
+    <path d="M 350 130 L 350 370"/>
+    <path d="M 230 250 L 470 250"/>
+
+    <!-- Circuit bus lines -->
+    <path d="M 700 150 L 850 150 L 920 220 L 1200 220" stroke-width="2"/>
+    <circle cx="850" cy="150" r="4" fill="#0062FF"/>
+    <circle cx="920" cy="220" r="4" fill="#0062FF"/>
+    <circle cx="1200" cy="220" r="5" fill="#4589FF"/>
+
+    <path d="M 800 320 L 950 320 L 1020 390 L 1350 390" stroke-width="1.5"/>
+    <circle cx="950" cy="320" r="3.5" fill="#2E3F92"/>
+    <circle cx="1020" cy="390" r="3.5" fill="#2E3F92"/>
+
+    <!-- Isometric Coordinate Node -->
+    <g transform="translate(1050, 100)">
+      <polygon points="100,20 180,60 100,100 20,60" stroke="#4589FF" stroke-opacity="0.3"/>
+      <polygon points="20,60 100,100 100,180 20,140" stroke="#4589FF" stroke-opacity="0.2"/>
+      <polygon points="100,100 180,60 180,140 100,180" stroke="#4589FF" stroke-opacity="0.4"/>
+    </g>
+
+    <!-- Sine Wave Harmonic Trace -->
+    <path d="M 0 540 Q 90 480, 180 540 T 360 540 T 540 540 T 720 540 T 900 540 T 1080 540 T 1260 540 T 1440 540" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
+    <path d="M 0 555 Q 90 515, 180 555 T 360 555 T 540 555 T 720 555 T 900 555 T 1080 555 T 1260 555 T 1440 555" stroke="rgba(69, 137, 255, 0.12)" stroke-width="1.5"/>
+  </g>
+
+  <!-- Ambient Light Orbs -->
+  <circle cx="1100" cy="180" r="280" fill="url(#circuitGlow)"/>
+  <circle cx="200" cy="450" r="220" fill="url(#circuitGlow)" fill-opacity="0.4"/>
+</svg>

@@ -20,6 +20,7 @@ const envSchema = z.object({
   // Badge payment (spec §04, §14)
   NEXT_PUBLIC_ESA_TILL_NUMBER: z.string().default("000000"),
   NEXT_PUBLIC_ESA_TILL_NAME: z.string().default("ESA Kenyatta University"),
+  NEXT_PUBLIC_ESA_BADGE_FEE: z.string().default("200"),
 
   // Sign-up gate (spec §14) — leave unset in dev to accept any address.
   ALLOWED_STUDENT_EMAIL_DOMAIN: z.preprocess(emptyToUndefined, z.string().optional()),
@@ -51,6 +52,7 @@ export const env = envSchema.parse({
   GMAIL_APP_PASSWORD: process.env.GMAIL_APP_PASSWORD,
   NEXT_PUBLIC_ESA_TILL_NUMBER: process.env.NEXT_PUBLIC_ESA_TILL_NUMBER,
   NEXT_PUBLIC_ESA_TILL_NAME: process.env.NEXT_PUBLIC_ESA_TILL_NAME,
+  NEXT_PUBLIC_ESA_BADGE_FEE: process.env.NEXT_PUBLIC_ESA_BADGE_FEE,
   ALLOWED_STUDENT_EMAIL_DOMAIN: process.env.ALLOWED_STUDENT_EMAIL_DOMAIN,
   STORAGE_DRIVER: process.env.STORAGE_DRIVER,
   BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,

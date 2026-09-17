@@ -31,10 +31,16 @@ export async function POST(req: Request) {
   const badgedUserIds = new Set(activeBadges.map((b) => b.userId));
 
   // --- Class reminders -----------------------------------------------------
-  const todayDow = (now.getDay() + 6) % 7; // JS getDay(): 0=Sun..6=Sat -> schema: 0=Mon..6=Sun
-  const windowStart = new Date(now.getTime() + 10 * 60 * 1000);
-  const windowEnd = new Date(now.getTime() + 20 * 60 * 1000);
-  const hhmm = (d: Date) => d.toTimeString().slice(0, 5);
+  // Kenya Standard Time / East Africa Time (EAT) is always UTC+3 (no DST).
+  // Calculate local time so serverless running in UTC correctly matches Kenyan class schedules.
+  const EAT_OFFSET_MS = 3 * 60 * 60 * 1000;
+  const eatNow = new Date(now.getTime() + EAT_OFFSET_MS);
+
+  const todayDow = (eatNow.getUTCDay() + 6) % 7; // JS getDay(): 0=Sun..6=Sat -> schema: 0=Mon..6=Sun
+  const windowStart = new Date(eatNow.getTime() + 10 * 60 * 1000);
+  const windowEnd = new Date(eatNow.getTime() + 20 * 60 * 1000);
+  const hhmm = (d: Date) =>
+    `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
 
   const todaysEntries = await db.query.timetableEntries.findMany({
     where: and(
@@ -45,7 +51,7 @@ export async function POST(req: Request) {
     with: { course: true },
   });
 
-  const dateKey = now.toISOString().slice(0, 10);
+  const dateKey = eatNow.toISOString().slice(0, 10);
   for (const entry of todaysEntries) {
     const link = `/timetable#entry-${entry.id}-${dateKey}`;
     const cohortStudents = await db.query.users.findMany({ where: eq(users.cohortId, entry.cohortId) });

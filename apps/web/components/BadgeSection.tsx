@@ -19,12 +19,17 @@ export function BadgeSection({
   badgeNumber,
   tillNumber,
   tillName,
+  badgeFee = "200",
+  legacyCardImageUrl,
 }: {
   fullName: string;
   hasActiveBadge: boolean;
   badgeNumber: string | null;
   tillNumber: string;
   tillName: string;
+  badgeFee?: string;
+  /** Scan of their pre-platform membership card, if this account was linked from the legacy roster. */
+  legacyCardImageUrl?: string | null;
 }) {
   const router = useRouter();
   const [history, setHistory] = useState<Badge[]>([]);
@@ -78,6 +83,16 @@ export function BadgeSection({
           </div>
           <Image src="/brand/logo.png" alt="" width={56} height={32} className="rounded bg-white/90 p-1" />
         </div>
+
+        {legacyCardImageUrl && (
+          <div className="mt-4 overflow-hidden rounded-md border border-white/20 shadow-sm">
+            <img
+              src={legacyCardImageUrl}
+              alt={`${fullName}'s original ESA membership card`}
+              className="block w-full"
+            />
+          </div>
+        )}
       </div>
     );
   }
@@ -90,12 +105,17 @@ export function BadgeSection({
         and activates your Badge.
       </p>
 
-      <div className="mt-4 flex items-center justify-between rounded-lg bg-neutral-100 px-4 py-3">
+      <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg bg-neutral-100 px-4 py-3 border border-neutral-200">
         <div>
-          <p className="text-xs text-neutral-500">Buy Goods Till Number</p>
-          <p className="text-lg font-bold tracking-wide text-ink">{tillNumber}</p>
+          <p className="text-xs font-semibold text-neutral-500">M-Pesa Buy Goods Till</p>
+          <p className="text-xl font-black tracking-wide text-ink">{tillNumber}</p>
+          <p className="text-xs font-medium text-neutral-600">{tillName}</p>
         </div>
-        <p className="text-sm text-neutral-600">{tillName}</p>
+        <div className="border-t sm:border-t-0 sm:border-l border-neutral-200 pt-2 sm:pt-0 sm:pl-4 text-left sm:text-right">
+          <p className="text-xs font-semibold text-neutral-500">Annual Membership</p>
+          <p className="text-lg font-extrabold text-accent">KES {badgeFee}</p>
+          <span className="text-[10px] text-neutral-400">Valid 1 Academic Year</span>
+        </div>
       </div>
 
       {pending ? (
@@ -117,11 +137,12 @@ export function BadgeSection({
             <input
               id="paymentReference"
               required
-              minLength={4}
-              className="field-input font-mono uppercase"
-              placeholder="e.g. QGH4X7YABC"
+              minLength={8}
+              maxLength={15}
+              className="field-input font-mono uppercase tracking-wider font-semibold"
+              placeholder="e.g. SAB12CD34E"
               value={paymentReference}
-              onChange={(e) => setPaymentReference(e.target.value)}
+              onChange={(e) => setPaymentReference(e.target.value.toUpperCase())}
             />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}

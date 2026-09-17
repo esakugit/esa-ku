@@ -1,5 +1,5 @@
 import "server-only";
-import { db, users, badges } from "@esa/db";
+import { db, users, badges, legacyMembers } from "@esa/db";
 import { eq, and } from "drizzle-orm";
 import { getSession } from "./session";
 
@@ -16,6 +16,8 @@ export type CurrentUser = {
   badgeNumber: string | null;
   /** True once department, intake year and reg. number are all set — the one signal every "finish setting up" prompt in the app checks. */
   profileComplete: boolean;
+  /** Scan of their physical pre-platform membership card, once an admin has linked their legacy roster row to this account. */
+  legacyCardImageUrl: string | null;
 };
 
 /**
@@ -36,6 +38,11 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     where: and(eq(badges.userId, user.id), eq(badges.status, "active")),
   });
 
+  const legacyMatch = await db.query.legacyMembers.findFirst({
+    where: eq(legacyMembers.matchedUserId, user.id),
+    columns: { cardImageUrl: true },
+  });
+
   return {
     id: user.id,
     fullName: user.fullName,
@@ -48,6 +55,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     hasActiveBadge: Boolean(activeBadge),
     badgeNumber: activeBadge?.badgeNumber ?? null,
     profileComplete: Boolean(user.departmentId && user.cohortId && user.regNo),
+    legacyCardImageUrl: legacyMatch?.cardImageUrl ?? null,
   };
 }
 

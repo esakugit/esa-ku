@@ -57,6 +57,14 @@ export async function POST(req: Request) {
   const parsed = applySchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
 
+  const cleanRef = parsed.data.paymentReference.trim().toUpperCase();
+  if (cleanRef.length < 8) {
+    return NextResponse.json(
+      { error: "Please provide a valid M-Pesa transaction reference (e.g. SAB12CD34E)." },
+      { status: 400 },
+    );
+  }
+
   const existingPending = await db.query.badges.findFirst({
     where: and(eq(badges.userId, user.id), eq(badges.status, "pending_verification")),
   });
@@ -67,11 +75,21 @@ export async function POST(req: Request) {
     );
   }
 
+  const duplicateRef = await db.query.badges.findFirst({
+    where: eq(badges.paymentReference, cleanRef),
+  });
+  if (duplicateRef) {
+    return NextResponse.json(
+      { error: "This M-Pesa transaction code has already been submitted." },
+      { status: 409 },
+    );
+  }
+
   const [row] = await db
     .insert(badges)
     .values({
       userId: user.id,
-      paymentReference: parsed.data.paymentReference.trim().toUpperCase(),
+      paymentReference: cleanRef,
       academicYear: currentAcademicYear(),
       status: "pending_verification",
     })
