@@ -1,62 +1,70 @@
+/**
+ * Database client — smart driver selection for dev vs production.
+ *
+ * PRODUCTION (Vercel + Neon):
+ *   Uses @neondatabase/serverless HTTP driver. This is the ONLY reliable
+ *   driver for Vercel Serverless Functions: it sends queries over HTTPS
+ *   instead of a persistent TCP socket, avoiding ETIMEDOUT / connection
+ *   exhaustion that kills the `pg` driver on Neon.
+ *
+ * DEVELOPMENT (local Postgres):
+ *   Uses node-postgres (`pg`) over a plain TCP connection pool.
+ *
+ * Selection is automatic — no config needed:
+ *   - neon.tech in DATABASE_URL  → always use Neon HTTP driver
+ *   - NODE_ENV === "production"  → always use Neon HTTP driver
+ *   - Everything else            → use local pg pool
+ */
+
+import { drizzle as drizzleNeon } from "drizzle-orm/neon-http";
+import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
+import { neon } from "@neondatabase/serverless";
 import { Pool } from "pg";
-import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "./schema";
 
-/**
- * Standard Postgres wire-protocol connection via `pg` — works unchanged
- * against a local Postgres in development and against Neon in production
- * (Neon's pooled connection string is a normal postgres:// URL). One driver,
- * one code path, no dev/prod split to maintain.
- */
-function getDatabaseUrl(): string {
-  const url = process.env.DATABASE_URL || process.env.POSTGRES_URL;
-  if (!url) {
-    return "postgresql://postgres:postgres@localhost:5432/esa_platform_dev";
-  }
-  return url;
-}
+const connectionString: string =
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_URL ||
+  "postgresql://postgres:postgres@localhost:5432/esa_platform_dev";
 
-// Neon's pooled endpoint (and most managed Postgres) requires TLS; a plain
-// local Postgres does not speak TLS by default. Toggle based on the URL so
-// the same code works in both places without extra config.
-function wantsSsl(url: string): boolean {
-  if (/localhost|127\.0\.0\.1/.test(url)) return false;
-  if (process.env.NODE_ENV === "production") return true;
+function shouldUseNeon(url: string): boolean {
   return (
-    /sslmode=require/.test(url) ||
+    process.env.NODE_ENV === "production" ||
     /neon\.tech/.test(url) ||
-    /supabase\./.test(url) ||
-    /render\.com/.test(url) ||
-    /railway\.app/.test(url) ||
-    /pooler\.supabase\.com/.test(url)
+    /neon-pooler/.test(url)
   );
 }
 
-const connectionString = getDatabaseUrl();
+// ─── Build the db client synchronously at module load ─────────────────────
+
+function buildDb() {
+  if (shouldUseNeon(connectionString)) {
+    // Neon serverless HTTP driver — no TCP socket, works on Vercel.
+    const sql = neon(connectionString);
+    return drizzleNeon(sql, { schema });
+  } else {
+    // Local dev — standard node-postgres pool.
+    const pool = new Pool({
+      connectionString,
+      ssl: false,
+      max: 10,
+    });
+    return drizzlePg(pool, { schema });
+  }
+}
+
+// ─── Singleton (dev hot-reload safe) ──────────────────────────────────────
 
 declare global {
   // eslint-disable-next-line no-var
-  var __esa_pg_pool: Pool | undefined;
-  // eslint-disable-next-line no-var
-  var __esa_drizzle_db: ReturnType<typeof drizzle<typeof schema>> | undefined;
+  var __esa_db: ReturnType<typeof buildDb> | undefined;
 }
 
-const pool =
-  globalThis.__esa_pg_pool ??
-  new Pool({
-    connectionString,
-    ssl: wantsSsl(connectionString) ? { rejectUnauthorized: false } : false,
-    max: 10,
-  });
+export const db: ReturnType<typeof buildDb> =
+  (process.env.NODE_ENV !== "production" && globalThis.__esa_db) || buildDb();
 
 if (process.env.NODE_ENV !== "production") {
-  globalThis.__esa_pg_pool = pool;
-}
-
-export const db = globalThis.__esa_drizzle_db ?? drizzle(pool, { schema });
-
-if (process.env.NODE_ENV !== "production") {
-  globalThis.__esa_drizzle_db = db;
+  globalThis.__esa_db = db;
 }
 
 export type Database = typeof db;
