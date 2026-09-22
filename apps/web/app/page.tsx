@@ -95,12 +95,14 @@ export default async function HomePage() {
       <main className="flex-1">
         {/* 2. Flagship Institutional Hero */}
         <section className="relative overflow-hidden border-b border-neutral-200 bg-neutral-950 text-white">
-          {/* Background schematic / hero image container */}
+          {/* Background schematic / engineering CAD canvas */}
           <div
-            className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity pointer-events-none"
+            className="absolute inset-0 bg-cover bg-right lg:bg-center opacity-85 pointer-events-none"
             style={{ backgroundImage: `url('${heroSettings?.heroImageUrl || "/hero-event.svg"}')` }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-neutral-950 via-neutral-950/90 to-neutral-900/75 pointer-events-none" />
+          {/* Directional vignette: deep solid contrast behind typography on the left, reveals glowing schematics on the right */}
+          <div className="absolute inset-0 bg-gradient-to-r from-neutral-950 via-neutral-950/80 to-neutral-950/20 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-neutral-950/30 pointer-events-none" />
 
           <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
             <div className="max-w-3xl">

@@ -1,54 +1,192 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="600" viewBox="0 0 1440 600" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="680" viewBox="0 0 1440 680" fill="none">
   <defs>
-    <linearGradient id="engGrad" x1="0" y1="0" x2="1440" y2="600" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#0a0f1d"/>
-      <stop offset="50%" stop-color="#111c38"/>
-      <stop offset="100%" stop-color="#070b14"/>
+    <!-- Background Technical Gradient -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1440" y2="680" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#050813"/>
+      <stop offset="45%" stop-color="#091124"/>
+      <stop offset="85%" stop-color="#0d1838"/>
+      <stop offset="100%" stop-color="#060c1d"/>
     </linearGradient>
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-      <circle cx="40" cy="40" r="1.5" fill="rgba(69, 137, 255, 0.2)"/>
+
+    <!-- Deep Ambient Glows -->
+    <radialGradient id="cyanAura" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1120 260) rotate(90) scale(320 440)">
+      <stop offset="0%" stop-color="#00D2FF" stop-opacity="0.32"/>
+      <stop offset="50%" stop-color="#0062FF" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#0062FF" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="indigoAura" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1280 440) rotate(90) scale(260 360)">
+      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.28"/>
+      <stop offset="60%" stop-color="#1E40AF" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="leftAmbient" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(320 380) rotate(90) scale(220 300)">
+      <stop offset="0%" stop-color="#004B23" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Blueprint Grid with Precision Intersection Points -->
+    <pattern id="precisionGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#2563EB" stroke-opacity="0.16" stroke-width="1"/>
+      <circle cx="40" cy="40" r="1.5" fill="#38BDF8" fill-opacity="0.45"/>
     </pattern>
-    <linearGradient id="circuitGlow" x1="0" y1="0" x2="1000" y2="500" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#2E3F92" stop-opacity="0.6"/>
-      <stop offset="100%" stop-color="#0062FF" stop-opacity="0.1"/>
-    </linearGradient>
+
+    <!-- Large 200px Blueprint Major Subdivisions -->
+    <pattern id="majorGrid" width="200" height="200" patternUnits="userSpaceOnUse">
+      <rect width="200" height="200" fill="none" stroke="#60A5FA" stroke-opacity="0.12" stroke-width="1.5"/>
+      <!-- Crosshair in center -->
+      <path d="M 92 100 L 108 100 M 100 92 L 100 108" stroke="#38BDF8" stroke-opacity="0.35" stroke-width="1"/>
+    </pattern>
+
+    <!-- Glow Filter for Active Nodes -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
 
-  <rect width="1440" height="600" fill="url(#engGrad)"/>
-  <rect width="1440" height="600" fill="url(#grid)"/>
+  <!-- Base Canvas Background -->
+  <rect width="1440" height="680" fill="url(#bgGrad)"/>
 
-  <!-- Engineering Geometric Vectors & Schematics -->
-  <g stroke="rgba(69, 137, 255, 0.18)" stroke-width="1.5" fill="none">
-    <path d="M 100 500 L 350 250 L 600 500 Z" />
-    <circle cx="350" cy="250" r="80" stroke-dasharray="6 6"/>
-    <circle cx="350" cy="250" r="120" stroke-opacity="0.08"/>
-    <path d="M 350 130 L 350 370"/>
-    <path d="M 230 250 L 470 250"/>
+  <!-- Glowing Lighting Spheres -->
+  <rect width="1440" height="680" fill="url(#cyanAura)"/>
+  <rect width="1440" height="680" fill="url(#indigoAura)"/>
+  <rect width="1440" height="680" fill="url(#leftAmbient)"/>
 
-    <!-- Circuit bus lines -->
-    <path d="M 700 150 L 850 150 L 920 220 L 1200 220" stroke-width="2"/>
-    <circle cx="850" cy="150" r="4" fill="#0062FF"/>
-    <circle cx="920" cy="220" r="4" fill="#0062FF"/>
-    <circle cx="1200" cy="220" r="5" fill="#4589FF"/>
+  <!-- Blueprint Coordinate Grids -->
+  <rect width="1440" height="680" fill="url(#precisionGrid)"/>
+  <rect width="1440" height="680" fill="url(#majorGrid)"/>
 
-    <path d="M 800 320 L 950 320 L 1020 390 L 1350 390" stroke-width="1.5"/>
-    <circle cx="950" cy="320" r="3.5" fill="#2E3F92"/>
-    <circle cx="1020" cy="390" r="3.5" fill="#2E3F92"/>
+  <!-- ================================================================= -->
+  <!-- TECHNICAL SCHEMATICS & VECTOR ARTWORK (Crisp, High Contrast)     -->
+  <!-- ================================================================= -->
 
-    <!-- Isometric Coordinate Node -->
-    <g transform="translate(1050, 100)">
-      <polygon points="100,20 180,60 100,100 20,60" stroke="#4589FF" stroke-opacity="0.3"/>
-      <polygon points="20,60 100,100 100,180 20,140" stroke="#4589FF" stroke-opacity="0.2"/>
-      <polygon points="100,100 180,60 180,140 100,180" stroke="#4589FF" stroke-opacity="0.4"/>
-    </g>
-
-    <!-- Sine Wave Harmonic Trace -->
-    <path d="M 0 540 Q 90 480, 180 540 T 360 540 T 540 540 T 720 540 T 900 540 T 1080 540 T 1260 540 T 1440 540" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
-    <path d="M 0 555 Q 90 515, 180 555 T 360 555 T 540 555 T 720 555 T 900 555 T 1080 555 T 1260 555 T 1440 555" stroke="rgba(69, 137, 255, 0.12)" stroke-width="1.5"/>
+  <!-- Left/Center Subtle Engineering Centerlines & Dial Circles -->
+  <g stroke="#38BDF8" stroke-opacity="0.22" stroke-width="1" fill="none">
+    <circle cx="280" cy="320" r="140" stroke-dasharray="4 6"/>
+    <circle cx="280" cy="320" r="170" stroke-opacity="0.12"/>
+    <line x1="280" y1="120" x2="280" y2="520" stroke-opacity="0.15" stroke-dasharray="2 4"/>
+    <line x1="80" y1="320" x2="480" y2="320" stroke-opacity="0.15" stroke-dasharray="2 4"/>
   </g>
 
-  <!-- Ambient Light Orbs -->
-  <circle cx="1100" cy="180" r="280" fill="url(#circuitGlow)"/>
-  <circle cx="200" cy="450" r="220" fill="url(#circuitGlow)" fill-opacity="0.4"/>
+  <!-- High-Tech Circuit Bus Lines Across Right Field -->
+  <g fill="none">
+    <!-- Bus Line 1: Primary Data Spine -->
+    <path d="M 640 140 L 860 140 L 910 190 L 1180 190 L 1230 240 L 1440 240" stroke="#38BDF8" stroke-width="2.5" stroke-opacity="0.85" filter="url(#glow)"/>
+    <!-- Nodes on Spine 1 -->
+    <circle cx="860" cy="140" r="5" fill="#00D2FF" stroke="#FFFFFF" stroke-width="1.5" filter="url(#glow)"/>
+    <circle cx="910" cy="190" r="4" fill="#38BDF8" stroke="#0C4A6E" stroke-width="1"/>
+    <circle cx="1180" cy="190" r="6" fill="#38BDF8" stroke="#FFFFFF" stroke-width="1.5" filter="url(#glow)"/>
+    <circle cx="1230" cy="240" r="4.5" fill="#60A5FA"/>
+
+    <!-- Bus Line 2: Parallel Logic Trace -->
+    <path d="M 720 170 L 880 170 L 930 220 L 1120 220 L 1160 260 L 1380 260" stroke="#818CF8" stroke-width="1.8" stroke-opacity="0.7"/>
+    <circle cx="880" cy="170" r="3.5" fill="#818CF8"/>
+    <circle cx="1120" cy="220" r="3.5" fill="#A5B4FC"/>
+
+    <!-- Bus Line 3: Power Distribution Branch -->
+    <path d="M 780 340 L 940 340 L 990 290 L 1240 290 L 1280 330 L 1440 330" stroke="#34D399" stroke-width="2" stroke-opacity="0.7" filter="url(#glow)"/>
+    <circle cx="940" cy="340" r="4.5" fill="#34D399" stroke="#064E3B" stroke-width="1"/>
+    <circle cx="990" cy="290" r="4.5" fill="#34D399" stroke="#FFFFFF" stroke-width="1"/>
+    <circle cx="1240" cy="290" r="5.5" fill="#10B981" stroke="#FFFFFF" stroke-width="1.5" filter="url(#glow)"/>
+
+    <!-- Bus Line 4: Lower Control Channel -->
+    <path d="M 850 480 L 1020 480 L 1080 420 L 1300 420 L 1340 460 L 1440 460" stroke="#60A5FA" stroke-width="2" stroke-opacity="0.75"/>
+    <circle cx="1020" cy="480" r="4" fill="#60A5FA"/>
+    <circle cx="1080" cy="420" r="5" fill="#93C5FD" stroke="#1E3A8A" stroke-width="1.5"/>
+    <circle cx="1300" cy="420" r="4" fill="#60A5FA"/>
+
+    <!-- Dropdown Feeders -->
+    <line x1="910" y1="190" x2="910" y2="280" stroke="#38BDF8" stroke-opacity="0.4" stroke-dasharray="4 4"/>
+    <line x1="1180" y1="190" x2="1180" y2="380" stroke="#60A5FA" stroke-opacity="0.35" stroke-dasharray="3 3"/>
+    <circle cx="1180" cy="380" r="3" fill="#38BDF8" fill-opacity="0.8"/>
+  </g>
+
+  <!-- 3D Isometric Engineering Node (Mechanical / Civil Truss) -->
+  <g transform="translate(1080, 80)">
+    <!-- Isometric Cube Faces -->
+    <polygon points="100,10 180,55 100,100 20,55" fill="#38BDF8" fill-opacity="0.14" stroke="#38BDF8" stroke-width="2" stroke-opacity="0.85"/>
+    <polygon points="20,55 100,100 100,190 20,145" fill="#2563EB" fill-opacity="0.22" stroke="#60A5FA" stroke-width="2" stroke-opacity="0.8"/>
+    <polygon points="100,100 180,55 180,145 100,190" fill="#1D4ED8" fill-opacity="0.32" stroke="#93C5FD" stroke-width="2" stroke-opacity="0.9"/>
+
+    <!-- Internal Truss Struts -->
+    <line x1="20" y1="55" x2="180" y2="145" stroke="#38BDF8" stroke-width="1.2" stroke-opacity="0.6" stroke-dasharray="4 4"/>
+    <line x1="180" y1="55" x2="20" y2="145" stroke="#38BDF8" stroke-width="1.2" stroke-opacity="0.6" stroke-dasharray="4 4"/>
+    <line x1="100" y1="10" x2="100" y2="190" stroke="#93C5FD" stroke-width="1.5" stroke-opacity="0.75"/>
+
+    <!-- Corner Vertex Pins -->
+    <circle cx="100" cy="10" r="4" fill="#FFFFFF" filter="url(#glow)"/>
+    <circle cx="180" cy="55" r="3.5" fill="#38BDF8"/>
+    <circle cx="100" cy="100" r="5" fill="#00D2FF" stroke="#FFFFFF" stroke-width="1.5" filter="url(#glow)"/>
+    <circle cx="20" cy="55" r="3.5" fill="#38BDF8"/>
+    <circle cx="20" cy="145" r="3.5" fill="#60A5FA"/>
+    <circle cx="100" cy="190" r="4" fill="#38BDF8"/>
+    <circle cx="180" cy="145" r="3.5" fill="#60A5FA"/>
+
+    <!-- Dimensional Label -->
+    <text x="100" y="215" fill="#7DD3FC" font-family="monospace" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="1">ISOMETRIC NODE // MOD-01</text>
+  </g>
+
+  <!-- Orbital Ellipse / Aerospace Trajectory Vector -->
+  <g transform="translate(1220, 360)">
+    <ellipse cx="0" cy="0" rx="160" ry="65" transform="rotate(-22)" stroke="#38BDF8" stroke-width="1.8" stroke-opacity="0.65" stroke-dasharray="8 6" fill="none"/>
+    <ellipse cx="0" cy="0" rx="195" ry="80" transform="rotate(-22)" stroke="#818CF8" stroke-width="1" stroke-opacity="0.35" fill="none"/>
+    
+    <!-- Orbital Nodes / Satellites -->
+    <circle cx="125" cy="-45" r="5" fill="#F43F5E" stroke="#FFFFFF" stroke-width="1.5" filter="url(#glow)"/>
+    <circle cx="-135" cy="50" r="4" fill="#38BDF8" stroke="#FFFFFF" stroke-width="1"/>
+    
+    <!-- Center Target -->
+    <circle cx="0" cy="0" r="18" fill="#1E3A8A" fill-opacity="0.4" stroke="#60A5FA" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="5" fill="#60A5FA" filter="url(#glow)"/>
+    <line x1="-30" y1="0" x2="30" y2="0" stroke="#60A5FA" stroke-width="1" stroke-opacity="0.6"/>
+    <line x1="0" y1="-30" x2="0" y2="30" stroke="#60A5FA" stroke-width="1" stroke-opacity="0.6"/>
+    <text x="0" y="38" fill="#93C5FD" font-family="monospace" font-size="10" font-weight="600" text-anchor="middle" letter-spacing="1">TRAJECTORY VECTOR</text>
+  </g>
+
+  <!-- Mathematical Harmonic Waves (Sine & Cosine Signals) -->
+  <g fill="none">
+    <!-- Carrier Sine Wave -->
+    <path d="M 0 580 Q 80 500, 160 580 T 320 580 T 480 580 T 640 580 T 800 580 T 960 580 T 1120 580 T 1280 580 T 1440 580" stroke="#38BDF8" stroke-width="3" stroke-opacity="0.75" filter="url(#glow)"/>
+    
+    <!-- Secondary Harmonic Wave -->
+    <path d="M 0 580 Q 40 530, 80 580 T 160 580 T 240 580 T 320 580 T 400 580 T 480 580 T 560 580 T 640 580 T 720 580 T 800 580 T 880 580 T 960 580 T 1040 580 T 1120 580 T 1200 580 T 1280 580 T 1360 580 T 1440 580" stroke="#A78BFA" stroke-width="1.5" stroke-opacity="0.45" stroke-dasharray="3 3"/>
+
+    <!-- Base Reference Line -->
+    <line x1="0" y1="580" x2="1440" y2="580" stroke="#64748B" stroke-width="1" stroke-opacity="0.3"/>
+  </g>
+
+  <!-- Technical Engineering Annotations & KU Coordinates -->
+  <g font-family="monospace" font-size="11" fill="#7DD3FC" fill-opacity="0.85" font-weight="600" letter-spacing="1.5">
+    <!-- Top-Right System Header -->
+    <text x="1400" y="45" text-anchor="end">KENYATTA UNIVERSITY // SCHOOL OF ENGINEERING</text>
+    <text x="1400" y="65" text-anchor="end" fill="#94A3B8" fill-opacity="0.7" font-size="10">COORD: -1.1804° S, 36.9363° E · MAIN CAMPUS</text>
+    <text x="1400" y="85" text-anchor="end" fill="#38BDF8" font-size="10">SPEC: ISO 9001:2015 · ESA-ENG-CAD-REV3</text>
+
+    <!-- Mid-Field Markers -->
+    <text x="740" y="132" fill="#38BDF8" font-size="10">BUS 01: DIGITAL HIGHWAY [48-BIT]</text>
+    <text x="780" y="332" fill="#34D399" font-size="10">BUS 02: HIGH-VOLTAGE POWER RAIL [415V/50Hz]</text>
+    <text x="850" y="472" fill="#60A5FA" font-size="10">BUS 03: TELEMETRY &amp; SENSOR ARRAY</text>
+
+    <!-- Bottom Left Engineering Disciplines Trace -->
+    <text x="40" y="640" fill="#E2E8F0" font-size="11" font-weight="700">ESA-KU DISCIPLINES: [CIVIL] · [ELECTRICAL] · [MECHANICAL] · [AEROSPACE] · [AGRICULTURAL]</text>
+    <text x="40" y="658" fill="#64748B" font-size="9" letter-spacing="1">AUTHENTICATED ENGINEERING CURRICULUM &amp; STUDENT LEADERSHIP PLATFORM</text>
+  </g>
+
+  <!-- Precision Corner Registration Crosshairs -->
+  <g stroke="#38BDF8" stroke-width="1.5" stroke-opacity="0.5">
+    <!-- Top Left -->
+    <line x1="20" y1="30" x2="40" y2="30"/>
+    <line x1="30" y1="20" x2="30" y2="40"/>
+    <!-- Top Right -->
+    <line x1="1400" y1="30" x2="1420" y2="30"/>
+    <line x1="1410" y1="20" x2="1410" y2="40"/>
+    <!-- Bottom Right -->
+    <line x1="1400" y1="650" x2="1420" y2="650"/>
+    <line x1="1410" y1="640" x2="1410" y2="660"/>
+  </g>
 </svg>
