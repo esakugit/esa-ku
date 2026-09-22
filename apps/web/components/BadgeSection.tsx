@@ -13,6 +13,17 @@ type Badge = {
   paymentReference: string;
 };
 
+function formatBadgeNumberSpaced(badgeNumber: string | null): string {
+  if (!badgeNumber) return "E S A - 0 0 0 0";
+  const upper = badgeNumber.trim().toUpperCase();
+  // Split characters and space them evenly like E S A - 1 3 3 0
+  return upper
+    .split("")
+    .join(" ")
+    .replace(/\s+-\s+/g, " - ")
+    .replace(/\s+\/\s+/g, " / ");
+}
+
 export function BadgeSection({
   fullName,
   hasActiveBadge,
@@ -38,8 +49,8 @@ export function BadgeSection({
   const [paymentReference, setPaymentReference] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [viewMode, setViewMode] = useState<"digital" | "physical">(
-    legacyCardImageUrl ? "physical" : "digital"
+  const [viewMode, setViewMode] = useState<"signature" | "executive" | "physical">(
+    legacyCardImageUrl ? "physical" : "signature"
   );
 
   useEffect(() => {
@@ -85,19 +96,30 @@ export function BadgeSection({
           <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">
             Membership Card
           </p>
-          {legacyCardImageUrl && (
-            <div className="flex items-center gap-1 rounded-md bg-neutral-100 p-0.5 text-xs font-medium text-neutral-600">
-              <button
-                type="button"
-                onClick={() => setViewMode("digital")}
-                className={`rounded px-2.5 py-1 transition-colors ${
-                  viewMode === "digital"
-                    ? "bg-white font-bold text-ink shadow-xs"
-                    : "hover:text-ink"
-                }`}
-              >
-                Digital Card
-              </button>
+          <div className="flex items-center gap-1 rounded-md bg-neutral-100 p-0.5 text-xs font-medium text-neutral-600">
+            <button
+              type="button"
+              onClick={() => setViewMode("signature")}
+              className={`rounded px-2.5 py-1 transition-colors ${
+                viewMode === "signature"
+                  ? "bg-white font-bold text-ink shadow-xs"
+                  : "hover:text-ink"
+              }`}
+            >
+              Signature Card
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("executive")}
+              className={`rounded px-2.5 py-1 transition-colors ${
+                viewMode === "executive"
+                  ? "bg-white font-bold text-ink shadow-xs"
+                  : "hover:text-ink"
+              }`}
+            >
+              Executive Chip
+            </button>
+            {legacyCardImageUrl && (
               <button
                 type="button"
                 onClick={() => setViewMode("physical")}
@@ -109,22 +131,188 @@ export function BadgeSection({
               >
                 Original Card Scan
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* Physical Scanned Card View */}
+        {/* 1. Physical Scanned Card View */}
         {viewMode === "physical" && legacyCardImageUrl ? (
-          <div className="relative mx-auto w-full max-w-[500px] aspect-[85.6/54] overflow-hidden rounded-2xl border border-neutral-300 bg-neutral-900 shadow-xl">
+          <div className="relative mx-auto w-full max-w-[520px] aspect-[85.6/54] overflow-hidden rounded-2xl border border-neutral-300 bg-neutral-900 shadow-xl">
             <img
               src={legacyCardImageUrl}
               alt={`${fullName}'s ESA membership card`}
               className="h-full w-full object-cover"
             />
           </div>
+        ) : viewMode === "signature" ? (
+          /* 2. Official Excom Signature Card (with Wireframe Logo Silhouette Watermark & Pill Fields) */
+          <div className="relative mx-auto w-full max-w-[520px] aspect-[85.6/54] select-none overflow-hidden rounded-2xl border border-neutral-700/80 bg-[#0c1017] p-4 sm:p-5 text-white shadow-2xl transition-transform hover:scale-[1.01]">
+            {/* Dark carbon diagonal grain texture */}
+            <div
+              className="pointer-events-none absolute inset-0 opacity-[0.07]"
+              style={{
+                backgroundImage:
+                  "radial-gradient(#ffffff 1px, transparent 1px), radial-gradient(#ffffff 1px, transparent 1px)",
+                backgroundSize: "16px 16px",
+                backgroundPosition: "0 0, 8px 8px",
+              }}
+            />
+
+            {/* Glowing cyan and teal cybernetic flow ribbons */}
+            <svg
+              className="pointer-events-none absolute inset-0 h-full w-full opacity-50"
+              viewBox="0 0 500 315"
+              fill="none"
+            >
+              <path
+                d="M 0 315 Q 120 220, 260 265 T 500 230 L 500 315 Z"
+                fill="url(#signatureCyanGlow)"
+              />
+              <path
+                d="M 0 295 Q 150 230, 280 275 T 500 240"
+                stroke="#38BDF8"
+                strokeWidth="1.5"
+                strokeOpacity="0.7"
+                fill="none"
+              />
+              <path
+                d="M 0 280 Q 140 215, 270 260 T 500 225"
+                stroke="#00D2FF"
+                strokeWidth="1.2"
+                strokeOpacity="0.5"
+                strokeDasharray="4 4"
+                fill="none"
+              />
+              <path
+                d="M 310 0 Q 390 55, 500 35"
+                stroke="#38BDF8"
+                strokeWidth="1.5"
+                strokeOpacity="0.6"
+                fill="none"
+              />
+              <path
+                d="M 350 0 Q 420 45, 500 22"
+                stroke="#00D2FF"
+                strokeWidth="1"
+                strokeOpacity="0.4"
+                fill="none"
+              />
+              <defs>
+                <linearGradient
+                  id="signatureCyanGlow"
+                  x1="0"
+                  y1="220"
+                  x2="500"
+                  y2="315"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop offset="0%" stopColor="#0284C7" stopOpacity="0.35" />
+                  <stop offset="60%" stopColor="#0F766E" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#0C1017" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+            </svg>
+
+            {/* Large ESA Logo Wireframe Silhouette Watermark (Center-Right) */}
+            <div className="pointer-events-none absolute right-[-15px] top-[14%] w-[215px] sm:w-[250px] h-[215px] sm:h-[250px] opacity-[0.26] select-none">
+              <img
+                src="/brand/esa-wireframe-badge.svg"
+                alt="ESA Crest Silhouette"
+                className="h-full w-full object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]"
+              />
+            </div>
+
+            {/* Card Content Layout */}
+            <div className="relative z-10 flex h-full flex-col justify-between">
+              {/* Top Header Row */}
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-white/90 leading-tight">
+                    ENGINEERING STUDENTS&apos;
+                  </p>
+                  <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-white/90 leading-tight">
+                    ASSOCIATION
+                  </p>
+                </div>
+
+                {/* Center Official Color Logo */}
+                <div className="shrink-0 -mt-0.5">
+                  <Image
+                    src="/brand/logo.png"
+                    alt="ESA-KU Crest"
+                    width={48}
+                    height={28}
+                    priority
+                    className="object-contain drop-shadow-md"
+                  />
+                </div>
+
+                {/* Status Indicator Chip */}
+                <div>
+                  {hasActiveBadge ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[8px] sm:text-[9px] font-bold text-emerald-300 border border-emerald-400/40 shadow-xs">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Verified
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-[8px] sm:text-[9px] font-bold text-amber-300 border border-amber-400/30 shadow-xs">
+                      Inactive
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Main Card Typography & White Pill Information Fields */}
+              <div className="space-y-2 my-auto">
+                <h2 className="text-lg sm:text-2xl font-black uppercase tracking-wider text-white drop-shadow-md">
+                  MEMBERSHIP CARD
+                </h2>
+
+                {/* Member Name Field */}
+                <div className="space-y-0.5 sm:space-y-1">
+                  <p className="text-[7.5px] sm:text-[8.5px] font-extrabold uppercase tracking-widest text-neutral-300">
+                    MEMBER NAME
+                  </p>
+                  <div className="rounded-full bg-white px-3.5 sm:px-4 py-1.5 sm:py-2 shadow-md">
+                    <p className="truncate text-[11px] sm:text-sm font-black uppercase tracking-wide text-neutral-900">
+                      {fullName}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Member Number & ESA-KU Split Pills */}
+                <div className="space-y-0.5 sm:space-y-1">
+                  <p className="text-[7.5px] sm:text-[8.5px] font-extrabold uppercase tracking-widest text-neutral-300">
+                    MEMBER NUMBER
+                  </p>
+                  <div className="grid grid-cols-12 gap-2">
+                    {/* Left Member Number Pill */}
+                    <div className="col-span-7 rounded-full bg-white px-2.5 sm:px-3 py-1.5 sm:py-2 text-center shadow-md">
+                      <p className="truncate font-mono text-[10.5px] sm:text-sm font-black tracking-[0.16em] sm:tracking-[0.25em] text-neutral-900">
+                        {formatBadgeNumberSpaced(badgeNumber)}
+                      </p>
+                    </div>
+                    {/* Right ESA-KU Pill */}
+                    <div className="col-span-5 rounded-full bg-white px-2.5 sm:px-3 py-1.5 sm:py-2 text-center shadow-md">
+                      <p className="truncate font-mono text-[10.5px] sm:text-sm font-black tracking-[0.18em] sm:tracking-[0.22em] text-neutral-900">
+                        E S A - K U
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom "I'M A PROUD MEMBER" Badge */}
+              <div className="flex items-center justify-center pt-0.5">
+                <span className="inline-flex items-center rounded-full bg-black/90 border border-neutral-600 px-3.5 py-0.5 text-[8.5px] sm:text-[9.5px] font-black uppercase tracking-widest text-white shadow-md">
+                  I&apos;M A PROUD MEMBER
+                </span>
+              </div>
+            </div>
+          </div>
         ) : (
-          /* Standard Bank Card Geometry (85.60 mm x 53.98 mm ratio) */
-          <div className="relative mx-auto w-full max-w-[500px] aspect-[85.6/54] select-none overflow-hidden rounded-2xl border border-neutral-800 bg-gradient-to-tr from-[#0a1128] via-[#101f42] to-[#1c356e] p-5 sm:p-6 text-white shadow-2xl transition-transform hover:scale-[1.01]">
+          /* 3. Executive EMV Smart Chip Card (Alternative View) */
+          <div className="relative mx-auto w-full max-w-[520px] aspect-[85.6/54] select-none overflow-hidden rounded-2xl border border-neutral-800 bg-gradient-to-tr from-[#0a1128] via-[#101f42] to-[#1c356e] p-5 sm:p-6 text-white shadow-2xl transition-transform hover:scale-[1.01]">
             {/* Background subtle micro-circuit watermark pattern */}
             <div
               className="pointer-events-none absolute inset-0 opacity-[0.06]"

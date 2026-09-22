@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
+  <defs>
+    <filter id="wireframeGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#wireframeGlow)" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Outer Gear Silhouette (16 teeth) -->
+    <path d="
+      M 185 25 L 215 25 L 218 55 A 150 150 0 0 1 262 73 L 288 57 L 310 78 L 294 104 A 150 150 0 0 1 312 148 L 342 151 L 342 181 L 312 184 A 150 150 0 0 1 294 228 L 310 254 L 288 275 L 262 259 A 150 150 0 0 1 218 277 L 215 307 L 185 307 L 182 277 A 150 150 0 0 1 138 259 L 112 275 L 90 254 L 106 228 A 150 150 0 0 1 88 184 L 58 181 L 58 151 L 88 148 A 150 150 0 0 1 106 104 L 90 78 L 112 57 L 138 73 A 150 150 0 0 1 182 55 Z
+    " fill="none" stroke-width="5"/>
+
+    <!-- Inner Concentric Circle -->
+    <circle cx="200" cy="166" r="115" stroke-width="3.5" fill="none"/>
+
+    <!-- Curving Highway Road Vector inside Gear -->
+    <path d="M 125 270 Q 155 190, 160 85" stroke-width="5" fill="none"/>
+    <path d="M 155 278 Q 172 205, 175 85" stroke-width="3" stroke-dasharray="8 8" fill="none"/>
+    <path d="M 185 281 Q 192 210, 195 90" stroke-width="4.5" fill="none"/>
+
+    <!-- Road Reflection Lines -->
+    <line x1="140" y1="240" x2="148" y2="242" stroke-width="2.5"/>
+    <line x1="146" y1="210" x2="152" y2="211" stroke-width="2.5"/>
+    <line x1="152" y1="175" x2="157" y2="176" stroke-width="2.5"/>
+
+    <!-- Central ESA-KU Pill Banner -->
+    <rect x="180" y="130" width="170" height="58" rx="20" stroke-width="4.5" fill="#0c1017" fill-opacity="0.85"/>
+    <text x="265" y="168" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="30" letter-spacing="2" text-anchor="middle">ESA-KU</text>
+
+    <!-- Subtitle Banner -->
+    <rect x="185" y="186" width="160" height="18" rx="5" stroke-width="2" fill="#0c1017" fill-opacity="0.85"/>
+    <text x="265" y="199" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="8" letter-spacing="1" text-anchor="middle">ENGINEERING STUDENTS ASSOCIATION</text>
+  </g>
+</svg>
