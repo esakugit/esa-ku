@@ -194,10 +194,17 @@ export async function generateCardCanvas(options: CardCanvasOptions): Promise<HT
   ctx.font = "800 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
   ctx.fillText("MEMBER NAME", 52, 228);
 
-  // White pill container for Member Name
+  const totalRowW = width - 96;
+  const numPillGap = 16;
+  // Left column width matches col-span-7 of a 12-col grid (7/12)
+  const leftColW = (totalRowW - numPillGap) * (7 / 12);
+  const rightColW = (totalRowW - numPillGap) * (5 / 12);
+  const numPillRightX = 48 + leftColW + numPillGap;
+
+  // White pill container for Member Name (matches left column width, ~58% of row)
   const namePillY = 242;
   const namePillH = 68;
-  const namePillW = width - 96;
+  const namePillW = leftColW;
   ctx.save();
   ctx.beginPath();
   if (typeof (ctx as unknown as { roundRect?: unknown }).roundRect === "function") {
@@ -212,11 +219,13 @@ export async function generateCardCanvas(options: CardCanvasOptions): Promise<HT
   ctx.fill();
   ctx.restore();
 
-  // Text inside Member Name pill
+  // Text inside Member Name pill - centered
   ctx.fillStyle = "#0f172a";
-  ctx.font = "900 24px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.font = "900 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.textAlign = "center";
   const nameDisplay = (options.fullName || "STUDENT MEMBER").toUpperCase();
-  ctx.fillText(nameDisplay, 76, namePillY + 43);
+  ctx.fillText(nameDisplay, 48 + namePillW / 2, namePillY + 42);
+  ctx.textAlign = "left";
 
   // 8. MEMBER NUMBER
   ctx.fillStyle = "rgba(203, 213, 225, 0.9)";
@@ -226,10 +235,8 @@ export async function generateCardCanvas(options: CardCanvasOptions): Promise<HT
   // Dual pills for Member Number and ESA-KU
   const numPillY = 364;
   const numPillH = 68;
-  const numPillGap = 16;
-  const numPillLeftW = (namePillW - numPillGap) * 0.60;
-  const numPillRightW = (namePillW - numPillGap) * 0.40;
-  const numPillRightX = 48 + numPillLeftW + numPillGap;
+  const numPillLeftW = leftColW;
+  const numPillRightW = rightColW;
 
   // Left Member Number Pill
   ctx.save();

@@ -322,10 +322,12 @@ export function BadgeSection({
                   <p className="text-[7.5px] sm:text-[8.5px] font-extrabold uppercase tracking-widest text-neutral-300">
                     MEMBER NAME
                   </p>
-                  <div className="rounded-full bg-white px-3.5 sm:px-4 py-1.5 sm:py-2 shadow-md">
-                    <p className="truncate text-[11px] sm:text-sm font-black uppercase tracking-wide text-neutral-900">
-                      {fullName}
-                    </p>
+                  <div className="grid grid-cols-12 gap-2">
+                    <div className="col-span-7 rounded-full bg-white px-3 sm:px-4 py-1.5 sm:py-2 text-center shadow-md">
+                      <p className="truncate text-[11px] sm:text-sm font-black uppercase tracking-wide text-neutral-900">
+                        {fullName}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
