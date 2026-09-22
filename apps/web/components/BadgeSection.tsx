@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { downloadCardImage } from "@/lib/cardCanvas";
 
 type Badge = {
   id: number;
@@ -52,6 +53,37 @@ export function BadgeSection({
   const [viewMode, setViewMode] = useState<"signature" | "executive" | "physical">(
     legacyCardImageUrl ? "physical" : "signature"
   );
+  const [downloading, setDownloading] = useState(false);
+
+  async function handleDownloadCard() {
+    setDownloading(true);
+    try {
+      if (viewMode === "physical" && legacyCardImageUrl) {
+        // Direct download of original scanned card
+        const a = document.createElement("a");
+        a.href = legacyCardImageUrl;
+        a.download = `ESA-Card-${(fullName || "Member").replace(/[^a-zA-Z0-9]/g, "-")}.png`;
+        a.target = "_blank";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return;
+      }
+
+      await downloadCardImage({
+        fullName,
+        badgeNumber,
+        hasActiveBadge,
+        regNo,
+        style: viewMode === "executive" ? "executive" : "signature",
+      });
+    } catch (err) {
+      console.error("Failed to generate membership card:", err);
+      alert("Could not generate card image. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   useEffect(() => {
     fetch("/api/badges")
@@ -430,6 +462,46 @@ export function BadgeSection({
             </div>
           </div>
         )}
+
+        {/* ─── Card Action Toolbar (Download & Offline Save) ─────────── */}
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 max-w-[520px] mx-auto px-1">
+          <div className="flex items-center gap-1.5 text-xs text-neutral-500">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            <span>{hasActiveBadge ? "Verified Digital Pass" : "Digital Preview Card"}</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleDownloadCard}
+            disabled={downloading}
+            className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3.5 py-1.5 text-xs font-bold text-neutral-800 shadow-xs hover:bg-neutral-50 hover:border-neutral-400 active:scale-[0.98] transition-all disabled:opacity-50"
+            title="Download high-resolution card for offline wallet or printing"
+          >
+            {downloading ? (
+              <>
+                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-neutral-400 border-t-accent" />
+                <span>Generating Card...</span>
+              </>
+            ) : (
+              <>
+                <svg
+                  className="h-3.5 w-3.5 text-accent"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+                <span>Download Card (PNG)</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* ─── 2. Activation / Payment Box (Shown when not active) ──────────── */}
