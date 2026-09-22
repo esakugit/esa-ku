@@ -40,6 +40,7 @@ export function EventsTab() {
 
   const [openCreate, setOpenCreate] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingPoster, setUploadingPoster] = useState(false);
 
   const loadData = () => {
     Promise.all([
@@ -148,6 +149,32 @@ export function EventsTab() {
     }
   }
 
+  async function handlePosterUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingPoster(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("category", "events");
+
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+
+      setForm((f) => ({ ...f, coverImageBlobUrl: data.url }));
+      success("Poster uploaded successfully!");
+    } catch (err: any) {
+      error(err.message || "Could not upload poster.");
+    } finally {
+      setUploadingPoster(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -248,29 +275,62 @@ export function EventsTab() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="field-label">RSVP / Registration Link (Google Form, etc.)</label>
+              <label className="field-label">RSVP / Registration Link (or mailto / form)</label>
               <input
-                type="url"
+                type="text"
                 className="field-input text-xs font-mono"
-                placeholder="https://forms.gle/..."
+                placeholder="https://forms.gle/... or mailto:esa.kenyattauniv@gmail.com"
                 value={form.registrationUrl}
                 onChange={(e) => setForm({ ...form, registrationUrl: e.target.value })}
               />
             </div>
 
             <div>
-              <label className="field-label">Event Flyer / Banner URL</label>
-              <input
-                type="url"
-                className="field-input text-xs font-mono"
-                placeholder="https://... (image URL)"
-                value={form.coverImageBlobUrl}
-                onChange={(e) => setForm({ ...form, coverImageBlobUrl: e.target.value })}
-              />
+              <label className="field-label">Event Poster / Flyer</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  className="field-input text-xs font-mono flex-1"
+                  placeholder="/events/sustainability-dinner-2026.jpg or image URL"
+                  value={form.coverImageBlobUrl}
+                  onChange={(e) => setForm({ ...form, coverImageBlobUrl: e.target.value })}
+                />
+                <label className="btn-secondary !text-xs !py-1.5 shrink-0 cursor-pointer">
+                  {uploadingPoster ? "Uploading..." : "📁 Upload Image"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploadingPoster}
+                    onChange={handlePosterUpload}
+                  />
+                </label>
+              </div>
             </div>
           </div>
+
+          {form.coverImageBlobUrl && (
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3 flex items-center gap-4">
+              <img
+                src={form.coverImageBlobUrl}
+                alt="Poster preview"
+                className="h-28 w-20 rounded-lg object-cover shadow-sm border border-neutral-200"
+              />
+              <div className="space-y-1 text-xs">
+                <p className="font-bold text-ink">Poster Preview</p>
+                <p className="text-neutral-500 truncate max-w-md">{form.coverImageBlobUrl}</p>
+                <button
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, coverImageBlobUrl: "" }))}
+                  className="text-xs text-red-600 hover:underline"
+                >
+                  Remove Poster
+                </button>
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="field-label">Event Description</label>
@@ -367,17 +427,25 @@ export function EventsTab() {
                 </div>
               </div>
 
-              <h3 className="text-base font-bold text-ink">{e.title}</h3>
-              {e.description && <p className="text-xs text-neutral-600 line-clamp-2">{e.description}</p>}
-
-              <div className="flex flex-wrap items-center gap-4 text-xs text-neutral-400 pt-1">
-                {e.location && <span>📍 {e.location}</span>}
-                {e.registrationUrl && (
-                  <span className="text-accent font-medium">✓ RSVP Link Active</span>
-                )}
+              <div className="flex gap-4">
                 {e.coverImageBlobUrl && (
-                  <span className="text-neutral-500 font-medium">🖼 Flyer Attached</span>
+                  <img
+                    src={e.coverImageBlobUrl}
+                    alt={e.title}
+                    className="h-20 w-16 rounded-md object-cover border border-neutral-200 shrink-0"
+                  />
                 )}
+                <div className="flex-1 space-y-1">
+                  <h3 className="text-base font-bold text-ink">{e.title}</h3>
+                  {e.description && <p className="text-xs text-neutral-600 line-clamp-2">{e.description}</p>}
+
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-neutral-400 pt-1">
+                    {e.location && <span>📍 {e.location}</span>}
+                    {e.registrationUrl && (
+                      <span className="text-accent font-medium">✓ RSVP Link Active</span>
+                    )}
+                  </div>
+                </div>
               </div>
             </article>
           ))}

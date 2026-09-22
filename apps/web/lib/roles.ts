@@ -28,8 +28,8 @@ export async function isClubAdminFor(
   user: Pick<CurrentUser, "id" | "role" | "hasActiveBadge">,
   clubId: number,
 ): Promise<boolean> {
-  if (isEsaAdmin(user)) return true; // ESA committee can manage any club
-  if (user.role !== "club_admin" || !user.hasActiveBadge) return false;
+  if (isEsaAdmin(user)) return true; // ESA committee / Super Admin can manage any club
+  if (user.role !== "club_admin") return false;
 
   const membership = await db.query.clubAdmins.findFirst({
     where: and(eq(clubAdmins.userId, user.id), eq(clubAdmins.clubId, clubId)),
@@ -43,7 +43,7 @@ export function isClassRepFor(
   cohortId: number,
 ): boolean {
   if (user.role === "esa_admin" || user.role === "super_admin") return true;
-  return user.role === "class_rep" && user.hasActiveBadge && user.cohortId === cohortId;
+  return user.role === "class_rep" && user.cohortId === cohortId;
 }
 
 export class ForbiddenError extends Error {

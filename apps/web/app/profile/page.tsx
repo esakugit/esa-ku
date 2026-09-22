@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { isEsaAdmin } from "@/lib/roles";
+import { db, clubAdmins } from "@esa/db";
+import { eq } from "drizzle-orm";
 import { SignOutButton } from "@/components/SignOutButton";
 import { BottomNav } from "@/components/BottomNav";
 import { InstitutionalHeader } from "@/components/InstitutionalHeader";
@@ -26,6 +28,15 @@ function initials(fullName: string): string {
 export default async function ProfilePage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  let managedClubs: { id: number; name: string; slug: string }[] = [];
+  if (user.role === "club_admin") {
+    const adminRows = await db.query.clubAdmins.findMany({
+      where: eq(clubAdmins.userId, user.id),
+      with: { club: true },
+    });
+    managedClubs = adminRows.map((r) => r.club);
+  }
 
   return (
     <div className="min-h-screen bg-surface flex flex-col font-sans text-ink">
@@ -59,6 +70,51 @@ export default async function ProfilePage() {
                 </div>
               </div>
             </div>
+
+            {/* Society Leadership Access Card (for Club Admins) */}
+            {managedClubs.length > 0 && (
+              <div className="card p-5 border-amber-200 bg-amber-50/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🏛</span>
+                    <h3 className="text-sm font-bold text-ink">Society Leadership Access</h3>
+                  </div>
+                  <span className="badge-pill !text-[11px] !bg-amber-100 !text-amber-800">Club Admin</span>
+                </div>
+                <p className="text-xs text-neutral-600">
+                  You are authorized by ESA Super Admin to create events and manage postings for your chapter:
+                </p>
+                <div className="space-y-2">
+                  {managedClubs.map((c) => (
+                    <div key={c.id} className="flex items-center justify-between rounded-lg bg-white p-3 border border-amber-200/60 shadow-xs">
+                      <span className="text-xs font-bold text-ink">{c.name}</span>
+                      <Link href={`/clubs/${c.slug}`} className="btn-primary !py-1 !px-3 !text-xs font-semibold">
+                        Post Events →
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Class Rep Access Card */}
+            {user.role === "class_rep" && (
+              <div className="card p-5 border-emerald-200 bg-emerald-50/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">📅</span>
+                    <h3 className="text-sm font-bold text-ink">Class Representative Access</h3>
+                  </div>
+                  <span className="badge-pill !text-[11px] !bg-emerald-100 !text-emerald-800">Class Rep</span>
+                </div>
+                <p className="text-xs text-neutral-600">
+                  You are authorized to update and edit lecture schedules for your cohort whenever changes occur:
+                </p>
+                <Link href="/timetable" className="btn-primary !py-2 !px-4 !text-xs font-semibold inline-block">
+                  Update Class Timetable →
+                </Link>
+              </div>
+            )}
 
             {/* Academic Profile setup banner (students only) */}
             {!user.profileComplete && !isEsaAdmin(user) && (

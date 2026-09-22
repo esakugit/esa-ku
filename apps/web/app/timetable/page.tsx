@@ -37,7 +37,7 @@ export default async function TimetablePage() {
 
   const canEdit =
     isAdmin ||
-    (user.role === "class_rep" && user.hasActiveBadge && user.cohortId === targetCohortId);
+    (user.role === "class_rep" && user.cohortId === targetCohortId);
 
   return (
     <div className="min-h-screen bg-surface flex flex-col font-sans text-ink">

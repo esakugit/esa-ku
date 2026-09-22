@@ -160,81 +160,124 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Flagship November Event Spotlight */}
+        {/* Flagship November Event Spotlight with Poster */}
         {featuredEvent && (
-          <section className="bg-gradient-to-r from-accent/10 via-neutral-100 to-accent-soft border-b border-neutral-200">
-            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-              <div className="rounded-xl border border-accent/30 bg-white p-6 sm:p-8 shadow-sm">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                  <div className="space-y-3 max-w-3xl">
+          <section className="bg-gradient-to-r from-accent/5 via-white to-accent-soft/30 border-b border-neutral-200 py-10">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="rounded-2xl border border-accent/25 bg-white p-6 sm:p-8 shadow-sm overflow-hidden">
+                <div className="flex flex-col lg:flex-row gap-8 items-start">
+                  {/* Event Poster / Flyer */}
+                  {featuredEvent.coverImageBlobUrl ? (
+                    <div className="w-full sm:w-72 lg:w-80 shrink-0 self-center lg:self-start">
+                      <Link href="/events" className="group block overflow-hidden rounded-xl border border-neutral-200 shadow-md">
+                        <img
+                          src={featuredEvent.coverImageBlobUrl}
+                          alt={featuredEvent.title}
+                          className="w-full object-cover transition-transform group-hover:scale-[1.02]"
+                        />
+                      </Link>
+                      <p className="mt-2 text-center text-[11px] text-neutral-400">
+                        Official Event Poster · Kenyatta University
+                      </p>
+                    </div>
+                  ) : null}
+
+                  {/* Event Details */}
+                  <div className="flex-1 space-y-4">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="inline-flex items-center gap-1.5 rounded-md bg-accent px-2.5 py-1 text-xs font-bold text-white uppercase tracking-wider">
                         ★ Flagship Community Event
                       </span>
-                      <span className="rounded-md bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent">
+                      <span className="rounded-md bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-700">
                         {featuredEvent.club.name}
                       </span>
                     </div>
 
-                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-ink">
+                    <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-ink">
                       {featuredEvent.title}
                     </h2>
 
-                    <p className="text-sm text-neutral-600 leading-relaxed">
-                      {featuredEvent.description}
-                    </p>
+                    {/* Theme Pill */}
+                    <div className="inline-block rounded-lg bg-accent-soft/80 border border-accent/20 px-3.5 py-1.5">
+                      <p className="text-xs font-bold text-accent">
+                        THEME: Engineering a Sustainable Future
+                      </p>
+                    </div>
 
-                    <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-neutral-700 pt-1">
-                      <div className="flex items-center gap-1.5">
-                        <svg className="h-4 w-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span>
+                    {/* Key Logistics */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      <div className="rounded-xl border border-neutral-100 bg-neutral-50/80 p-3 space-y-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Date &amp; Time</p>
+                        <p className="text-sm font-bold text-ink">
                           {new Date(featuredEvent.startAt).toLocaleDateString("en-KE", {
-                            weekday: "short",
+                            weekday: "long",
                             day: "numeric",
                             month: "long",
                             year: "numeric",
                           })}
-                        </span>
+                        </p>
+                        <p className="text-xs text-neutral-600 font-medium">Prompt From: 6:00 PM</p>
                       </div>
 
-                      {featuredEvent.location && (
-                        <div className="flex items-center gap-1.5">
-                          <svg className="h-4 w-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          <span>{featuredEvent.location}</span>
-                        </div>
-                      )}
+                      <div className="rounded-xl border border-neutral-100 bg-neutral-50/80 p-3 space-y-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Venue</p>
+                        <p className="text-sm font-bold text-ink">{featuredEvent.location || "Trademark Hotel"}</p>
+                        <p className="text-xs text-neutral-500">Nairobi, Kenya</p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex flex-col sm:flex-row lg:flex-col gap-3 flex-none">
-                    {featuredEvent.registrationUrl ? (
-                      <a
-                        href={featuredEvent.registrationUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-primary !px-6 !py-3 text-center !text-sm shadow-sm"
-                      >
-                        Register / RSVP Now →
-                      </a>
-                    ) : (
-                      <Link
-                        href={`/clubs/${featuredEvent.club.slug}`}
-                        className="btn-primary !px-6 !py-3 text-center !text-sm shadow-sm"
-                      >
-                        View Event Details →
-                      </Link>
+                    {/* Evening Palette */}
+                    <div className="space-y-1.5 pt-1">
+                      <p className="text-xs font-semibold text-neutral-600">Evening Dress Palette:</p>
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <span className="inline-flex items-center gap-1.5 rounded-md bg-[#004B23] px-2.5 py-1 font-semibold text-white shadow-2xs">
+                          <span className="h-2 w-2 rounded-full bg-emerald-300" />
+                          Emerald Green
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 rounded-md bg-[#800020] px-2.5 py-1 font-semibold text-white shadow-2xs">
+                          <span className="h-2 w-2 rounded-full bg-rose-300" />
+                          Burgundy
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 rounded-md bg-neutral-900 px-2.5 py-1 font-semibold text-white shadow-2xs">
+                          <span className="h-2 w-2 rounded-full bg-neutral-400" />
+                          Black
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Description preview */}
+                    {featuredEvent.description && (
+                      <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed line-clamp-3 pt-1">
+                        {featuredEvent.description}
+                      </p>
                     )}
-                    <Link
-                      href="/sign-up"
-                      className="rounded-md border border-neutral-300 bg-white px-5 py-2.5 text-center text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
-                    >
-                      Join ESA Community
-                    </Link>
+
+                    {/* Call to Actions */}
+                    <div className="pt-3 flex flex-wrap items-center gap-3 border-t border-neutral-100">
+                      {featuredEvent.registrationUrl ? (
+                        <a
+                          href={featuredEvent.registrationUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-primary !px-5 !py-2.5 !text-xs sm:!text-sm font-bold shadow-sm"
+                        >
+                          RSVP for Dinner →
+                        </a>
+                      ) : (
+                        <Link
+                          href="/events"
+                          className="btn-primary !px-5 !py-2.5 !text-xs sm:!text-sm font-bold shadow-sm"
+                        >
+                          View Event Details →
+                        </Link>
+                      )}
+                      <Link
+                        href="/events"
+                        className="rounded-md border border-neutral-300 bg-white px-4 py-2.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
+                      >
+                        All Campus Events ({events.length}) →
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -32,8 +32,8 @@ const createSchema = z.object({
   location: z.string().max(200).optional(),
   startAt: z.string().datetime().or(z.string().min(1)),
   endAt: z.string().datetime().or(z.string().min(1)).optional(),
-  coverImageBlobUrl: z.string().url().optional().or(z.literal("")),
-  registrationUrl: z.string().url().optional().or(z.literal("")),
+  coverImageBlobUrl: z.string().max(1000).optional().or(z.literal("")),
+  registrationUrl: z.string().max(1000).optional().or(z.literal("")),
   isFeatured: z.boolean().optional(),
 });
 

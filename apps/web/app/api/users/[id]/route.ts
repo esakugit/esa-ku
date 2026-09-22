@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { db, users, badges, departments, cohorts } from "@esa/db";
+import { db, users, badges, departments, cohorts, clubAdmins } from "@esa/db";
 import { eq, desc } from "drizzle-orm";
 import { requireApiEsaAdmin, isResponse } from "@/lib/api";
 import { generateUniqueBadgeNumber } from "@/lib/badgeNumber";
@@ -25,6 +25,7 @@ const patchSchema = z.discriminatedUnion("action", [
     action: z.literal("update_role"),
     role: z.enum(["student", "class_rep", "club_admin", "esa_admin"]),
     cohortId: z.number().int().positive().optional(),
+    clubId: z.number().int().positive().optional(),
   }),
   z.object({
     action: z.literal("update_profile"),
@@ -124,6 +125,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         );
       }
       await db.update(users).set({ role: "class_rep", cohortId, updatedAt: new Date() }).where(eq(users.id, userId));
+    } else if (parsed.data.role === "club_admin") {
+      await db.update(users).set({ role: "club_admin", updatedAt: new Date() }).where(eq(users.id, userId));
+      if (parsed.data.clubId) {
+        await db
+          .insert(clubAdmins)
+          .values({ userId, clubId: parsed.data.clubId, level: "owner" })
+          .onConflictDoUpdate({
+            target: [clubAdmins.userId, clubAdmins.clubId],
+            set: { level: "owner" },
+          });
+      }
     } else {
       await db.update(users).set({ role: parsed.data.role, updatedAt: new Date() }).where(eq(users.id, userId));
     }

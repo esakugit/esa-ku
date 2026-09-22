@@ -46,6 +46,10 @@ export function MembersTab() {
   const [customBadgeNumber, setCustomBadgeNumber] = useState("");
   const [roleModalMember, setRoleModalMember] = useState<Member | null>(null);
   const [newRole, setNewRole] = useState<string>("student");
+  const [clubs, setClubs] = useState<{ id: number; name: string }[]>([]);
+  const [cohorts, setCohorts] = useState<{ id: number; label: string }[]>([]);
+  const [selectedClubId, setSelectedClubId] = useState<number>(1);
+  const [selectedCohortId, setSelectedCohortId] = useState<number>(1);
   const [actionLoading, setActionLoading] = useState(false);
 
   async function loadMembers() {
@@ -70,6 +74,24 @@ export function MembersTab() {
 
   useEffect(() => {
     loadMembers();
+    fetch("/api/clubs")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setClubs(data);
+          if (data.length > 0) setSelectedClubId(data[0].id);
+        }
+      })
+      .catch(() => {});
+    fetch("/api/cohorts")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setCohorts(data);
+          if (data.length > 0) setSelectedCohortId(data[0].id);
+        }
+      })
+      .catch(() => {});
   }, [roleFilter, statusFilter]);
 
   // Debounced or on-submit search
@@ -134,6 +156,8 @@ export function MembersTab() {
         body: JSON.stringify({
           action: "update_role",
           role: newRole,
+          clubId: newRole === "club_admin" ? selectedClubId : undefined,
+          cohortId: newRole === "class_rep" ? selectedCohortId : undefined,
         }),
       });
       const data = await res.json();
@@ -437,11 +461,51 @@ export function MembersTab() {
                   onChange={(e) => setNewRole(e.target.value)}
                 >
                   <option value="student">Student (Standard Member)</option>
-                  <option value="class_rep">Class Representative</option>
-                  <option value="club_admin">Club Admin</option>
+                  <option value="class_rep">Class Representative (Timetable Editor)</option>
+                  <option value="club_admin">Club Admin (Society Head / Event Creator)</option>
                   <option value="esa_admin">ESA Administrator</option>
                 </select>
               </div>
+
+              {newRole === "club_admin" && (
+                <div>
+                  <label className="field-label">Assigned Technical Society / Club</label>
+                  <select
+                    className="field-input w-full"
+                    value={selectedClubId}
+                    onChange={(e) => setSelectedClubId(Number(e.target.value))}
+                  >
+                    {clubs.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-[11px] text-neutral-500">
+                    Gives this member direct permission to create and manage events for this society.
+                  </p>
+                </div>
+              )}
+
+              {newRole === "class_rep" && (
+                <div>
+                  <label className="field-label">Assigned Cohort / Class</label>
+                  <select
+                    className="field-input w-full"
+                    value={selectedCohortId}
+                    onChange={(e) => setSelectedCohortId(Number(e.target.value))}
+                  >
+                    {cohorts.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-[11px] text-neutral-500">
+                    Gives this class rep permission to update and edit class schedules for this cohort.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex gap-2">

@@ -18,6 +18,7 @@ export interface InstitutionalHeaderProps {
 
 const navLinks = [
   { href: "/", label: "Home" },
+  { href: "/events", label: "Events" },
   { href: "/resources", label: "Resources" },
   { href: "/timetable", label: "Timetables" },
   { href: "/clubs", label: "Clubs & Chapters" },

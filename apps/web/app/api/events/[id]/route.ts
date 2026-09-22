@@ -11,8 +11,8 @@ const patchSchema = z.object({
   location: z.string().max(200).optional().nullable(),
   startAt: z.string().min(1).optional(),
   endAt: z.string().min(1).optional().nullable(),
-  coverImageBlobUrl: z.string().url().optional().nullable().or(z.literal("")),
-  registrationUrl: z.string().url().optional().nullable().or(z.literal("")),
+  coverImageBlobUrl: z.string().max(1000).optional().nullable().or(z.literal("")),
+  registrationUrl: z.string().max(1000).optional().nullable().or(z.literal("")),
   isFeatured: z.boolean().optional(),
 });
 
