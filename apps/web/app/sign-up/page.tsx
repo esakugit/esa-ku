@@ -61,16 +61,24 @@ export default function SignUpPage() {
             </p>
           )}
           {devVerifyUrl && (
-            <p className="mt-3 text-xs text-neutral-500">
-              Dev mode (email not configured):{" "}
-              <Link href={devVerifyUrl} className="text-accent underline">
-                click to verify
+            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50/80 p-3.5 text-xs text-amber-800">
+              <p className="font-semibold text-amber-900 mb-1">Instant Verification Link:</p>
+              <p className="mb-2">
+                If the verification email does not arrive in your institutional inbox or spam folder:
+              </p>
+              <Link
+                href={devVerifyUrl}
+                className="inline-flex items-center gap-1 font-semibold text-accent underline hover:text-accent-dark"
+              >
+                Click here to verify your account directly →
               </Link>
-            </p>
+            </div>
           )}
-          <Link href="/login" className="btn-primary mt-4">
-            Go to login
-          </Link>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link href="/login" className="btn-primary">
+              Go to login
+            </Link>
+          </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="card space-y-4 p-5">

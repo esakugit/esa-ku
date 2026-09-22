@@ -43,18 +43,27 @@ export async function POST(req: Request) {
     })
     .where(eq(users.id, user.id));
 
+  let emailSent = true;
   try {
     await sendVerificationEmail(user.email, verificationToken);
-  } catch (err) {
-    console.error("Failed to resend verification email:", err);
-    return NextResponse.json(
-      { error: "Could not send verification email at this moment. Please check server configuration." },
-      { status: 500 },
-    );
+  } catch (err: unknown) {
+    emailSent = false;
+    const errorObj = err as { code?: string; message?: string; response?: string };
+    console.error("[AUTH RESEND] Failed to send verification email:", {
+      code: errorObj?.code,
+      message: errorObj?.message,
+      response: errorObj?.response,
+    });
   }
 
   return NextResponse.json({
     ok: true,
-    message: "A new verification link has been sent to your email.",
+    emailSent,
+    message: emailSent
+      ? "A new verification link has been dispatched to your email (check your inbox and spam folder)."
+      : "We created a new verification link, but the email could not be delivered.",
+    ...(!emailSent || process.env.NODE_ENV !== "production"
+      ? { devVerifyUrl: `/api/auth/verify?token=${verificationToken}` }
+      : {}),
   });
 }

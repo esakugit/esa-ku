@@ -7,6 +7,7 @@ import { SiteHeroTab } from "./SiteHeroTab";
 import { AnnouncementsTab } from "./AnnouncementsTab";
 import { EventsTab } from "./EventsTab";
 import { MembersTab } from "./MembersTab";
+import { SmtpDiagnosticCard } from "./SmtpDiagnosticCard";
 
 type Department = { id: number; name: string; code: string };
 type Course = { id: number; departmentId: number; code: string; name: string };
@@ -159,6 +160,11 @@ function OverviewTab({ onNavigate }: { onNavigate: (t: Tab) => void }) {
             <StatCard key={s.label} {...s} onClick={() => onNavigate(s.tab)} />
           ))}
         </div>
+      </div>
+
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">System Diagnostics</p>
+        <SmtpDiagnosticCard />
       </div>
     </div>
   );

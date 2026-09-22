@@ -75,23 +75,33 @@ export async function POST(req: Request) {
     .returning();
 
   let emailSent = true;
+  let emailErrorMessage: string | null = null;
   try {
     await sendVerificationEmail(user.email, verificationToken);
-  } catch (err) {
+  } catch (err: unknown) {
     emailSent = false;
-    console.error("Failed to send verification email:", err);
+    const errorObj = err as { code?: string; message?: string; response?: string };
+    emailErrorMessage = errorObj?.message || String(err);
+    console.error("[AUTH SIGNUP] Failed to send verification email:", {
+      code: errorObj?.code,
+      message: errorObj?.message,
+      response: errorObj?.response,
+    });
   }
 
   return NextResponse.json({
     ok: true,
     isBootstrapAdmin: isBootstrap,
-    message: isBootstrap
-      ? "Account created as the platform's founding admin. Check your email for a verification link."
-      : emailSent
-        ? "Account created. Check your email for a verification link."
-        : "Account created, but the verification email could not be sent — email isn't configured yet.",
-    // Dev convenience only: lets you verify locally without Gmail set up.
-    ...(process.env.NODE_ENV !== "production" && !emailSent
+    emailSent,
+    message: !emailSent
+      ? isBootstrap
+        ? "Account created as the founding admin, but the verification email could not be sent (SMTP configuration pending)."
+        : "Account created, but the verification email could not be delivered. Please check your spam folder or verify below."
+      : isBootstrap
+        ? "Account created as the platform's founding admin. Check your email for a verification link."
+        : "Account created. Check your inbox and spam folder for a verification link.",
+    // Always provide direct verification URL if email failed or in development so users are never locked out
+    ...(!emailSent || process.env.NODE_ENV !== "production"
       ? { devVerifyUrl: `/api/auth/verify?token=${verificationToken}` }
       : {}),
   });

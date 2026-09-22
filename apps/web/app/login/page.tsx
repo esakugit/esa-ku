@@ -31,6 +31,7 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
 
   const [resendStatus, setResendStatus] = useState<string | null>(null);
+  const [directVerifyUrl, setDirectVerifyUrl] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
 
   async function handleResendVerification() {
@@ -40,6 +41,7 @@ function LoginForm() {
     }
     setResending(true);
     setResendStatus(null);
+    setDirectVerifyUrl(null);
     try {
       const res = await fetch("/api/auth/resend-verification", {
         method: "POST",
@@ -51,6 +53,9 @@ function LoginForm() {
         setError(data.error ?? "Failed to resend verification link.");
       } else {
         setResendStatus(data.message ?? "Verification link sent! Check your inbox.");
+        if (data.devVerifyUrl) {
+          setDirectVerifyUrl(data.devVerifyUrl);
+        }
         setError(null);
       }
     } catch {
@@ -64,6 +69,7 @@ function LoginForm() {
     e.preventDefault();
     setError(null);
     setResendStatus(null);
+    setDirectVerifyUrl(null);
     setLoading(true);
     try {
       const res = await fetch("/api/auth/login", {
@@ -105,6 +111,13 @@ function LoginForm() {
       {resendStatus && (
         <div className="card mb-4 p-4 text-sm border-brandgreen/30 bg-brandgreen-soft text-brandgreen">
           {resendStatus}
+          {directVerifyUrl && (
+            <div className="mt-2 pt-2 border-t border-brandgreen/20">
+              <Link href={directVerifyUrl} className="font-semibold underline text-brandgreen hover:opacity-80">
+                Click here to verify your account directly →
+              </Link>
+            </div>
+          )}
         </div>
       )}
 
