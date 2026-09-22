@@ -27,7 +27,7 @@ export default async function AdminResourcesPage() {
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-neutral-600">
             Review and approve uploaded examination papers, lecture notes, and lab manuals before publishing
-            them to the public Academic Vault.
+            them to the public resources library.
           </p>
         </header>
 

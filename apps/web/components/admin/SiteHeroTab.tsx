@@ -20,7 +20,7 @@ export function SiteHeroTab() {
   const [form, setForm] = useState<HeroSettings>({
     heroTitle: "Advancing Engineering Excellence, Innovation & Technical Leadership",
     heroSubtitle:
-      "The official academic and professional society representing Kenyatta University engineering scholars across Civil, Electrical, Mechanical, Agricultural, and Aerospace disciplines.",
+      "The official academic and professional society representing Kenyatta University engineering students across Civil, Electrical, Mechanical, Agricultural, and Aerospace disciplines.",
     heroEyebrow: "Kenyatta University · School of Engineering & Architecture",
     heroImageUrl: "/hero-event.svg",
     heroBadgeText: "Official ESA Student Society",

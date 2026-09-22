@@ -113,12 +113,12 @@ export default async function HomePage() {
 
               <p className="mt-5 text-base sm:text-lg leading-relaxed text-neutral-300">
                 {heroSettings?.heroSubtitle ||
-                  "The official academic and professional society representing Kenyatta University engineering scholars across Civil, Electrical, Mechanical, Agricultural, and Aerospace disciplines."}
+                  "The official academic and professional society representing Kenyatta University engineering students across Civil, Electrical, Mechanical, Agricultural, and Aerospace disciplines."}
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Link href="/resources" className="btn-primary !px-5 !py-2.5 !text-sm shadow-md">
-                  Access Academic Vault
+                  Browse Resources
                 </Link>
                 <Link
                   href="/timetable"
@@ -132,7 +132,7 @@ export default async function HomePage() {
                   </Link>
                 ) : !user.hasActiveBadge ? (
                   <Link href="/profile" className="lock-chip !text-xs font-semibold">
-                    Activate Digital Badge →
+                    Activate Membership Card →
                   </Link>
                 ) : null}
               </div>
@@ -327,7 +327,7 @@ export default async function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Gateway 1: Academic Vault */}
+            {/* Gateway 1: Resources */}
             <Link
               href="/resources"
               className="card group p-5 hover:border-accent hover:shadow-card-hover transition-all flex flex-col justify-between"
@@ -339,14 +339,14 @@ export default async function HomePage() {
                   </svg>
                 </div>
                 <h3 className="text-base font-bold text-ink group-hover:text-accent transition-colors">
-                  Academic Vault
+                  Resources
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed text-neutral-600">
-                  Access peer-reviewed past examination papers, faculty lecture notes, and lab manuals organized by unit.
+                  Access past examination papers, lecture notes, and lab manuals organized by course unit.
                 </p>
               </div>
               <span className="mt-5 inline-flex items-center text-xs font-semibold text-accent">
-                Browse Repository →
+                Browse Resources →
               </span>
             </Link>
 

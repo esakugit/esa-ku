@@ -40,7 +40,7 @@ export function InstitutionalFooter() {
           {/* Academic Gateway */}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-              Academic Vault
+              Resources
             </h3>
             <ul className="mt-3 space-y-2 text-xs">
               <li>
@@ -98,12 +98,12 @@ export function InstitutionalFooter() {
           {/* Society & Governance */}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-              Society & Badges
+              Membership & Society
             </h3>
             <ul className="mt-3 space-y-2 text-xs">
               <li>
                 <Link href="/profile" className="hover:text-white transition-colors">
-                  Digital Badge Verification
+                  Membership Card
                 </Link>
               </li>
               <li>

@@ -26,7 +26,7 @@ export default function NotFound() {
             href="/resources"
             className="w-full sm:w-auto rounded-md border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
           >
-            Browse Academic Vault
+            Browse Resources
           </Link>
         </div>
       </div>

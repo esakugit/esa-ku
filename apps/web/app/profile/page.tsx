@@ -11,11 +11,11 @@ import { PushSubscribeToggle } from "@/components/PushSubscribeToggle";
 import { env } from "@/lib/env";
 
 const ROLE_LABELS: Record<string, string> = {
-  student: "Engineering Scholar",
-  class_rep: "Class Representative",
-  club_admin: "Chapter Executive",
-  esa_admin: "ESA Administrator",
-  super_admin: "Super Administrator",
+  student: "Student",
+  class_rep: "Class Rep",
+  club_admin: "Club Admin",
+  esa_admin: "ESA Admin",
+  super_admin: "Super Admin",
 };
 
 function initials(fullName: string): string {
@@ -32,15 +32,14 @@ export default async function ProfilePage() {
       <InstitutionalHeader user={user} showAdmin={isEsaAdmin(user)} />
       <main className="flex-1 mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6">
-          <span className="text-xs font-bold uppercase tracking-wider text-accent">Member Accreditation</span>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-ink">
-            Membership Portal & Digital Badge
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
+            Profile
           </h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           <div className="lg:col-span-2 space-y-6">
-            {/* Identity card */}
+            {/* User Identity Card */}
             <div className="card p-6 flex flex-col sm:flex-row sm:items-center gap-5">
               <div className="flex h-16 w-16 flex-none items-center justify-center rounded-lg bg-neutral-900 text-lg font-bold text-white shadow-xs">
                 {initials(user.fullName)}
@@ -49,7 +48,9 @@ export default async function ProfilePage() {
                 <h2 className="truncate text-xl font-bold text-ink">{user.fullName}</h2>
                 <p className="truncate text-xs text-neutral-500">{user.email}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <span className="badge-pill !text-xs">{ROLE_LABELS[user.role] ?? user.role}</span>
+                  <span className="badge-pill !text-xs font-semibold">
+                    {ROLE_LABELS[user.role] ?? user.role}
+                  </span>
                   {user.regNo && (
                     <span className="rounded bg-neutral-100 px-2 py-0.5 font-mono text-xs text-neutral-700">
                       {user.regNo}
@@ -59,12 +60,13 @@ export default async function ProfilePage() {
               </div>
             </div>
 
+            {/* Academic Profile setup banner */}
             {!user.profileComplete && (
               <div className="card flex items-center justify-between gap-4 border-flag/30 bg-flag-soft p-5">
                 <div>
-                  <p className="text-sm font-semibold text-ink">Complete Academic Profile</p>
+                  <p className="text-sm font-semibold text-ink">Academic Profile</p>
                   <p className="mt-0.5 text-xs text-neutral-600">
-                    Set your engineering department and cohort year to access localized schedules.
+                    Set your department and study year to access timetables and course materials.
                   </p>
                 </div>
                 <Link href="/complete-profile" className="btn-primary !text-xs whitespace-nowrap">
@@ -73,10 +75,12 @@ export default async function ProfilePage() {
               </div>
             )}
 
+            {/* Large Bank Card Geometry Membership Badge */}
             <BadgeSection
               fullName={user.fullName}
               hasActiveBadge={user.hasActiveBadge}
               badgeNumber={user.badgeNumber}
+              regNo={user.regNo}
               tillNumber={env.NEXT_PUBLIC_ESA_TILL_NUMBER}
               tillName={env.NEXT_PUBLIC_ESA_TILL_NAME}
               badgeFee={env.NEXT_PUBLIC_ESA_BADGE_FEE}
@@ -85,9 +89,9 @@ export default async function ProfilePage() {
 
             {user.hasActiveBadge && (
               <div className="card p-6">
-                <h3 className="text-sm font-bold text-ink">Automated Academic Alerts</h3>
+                <h3 className="text-sm font-bold text-ink">Push Notifications</h3>
                 <p className="mt-1 text-xs text-neutral-500">
-                  Receive instant browser push notifications for class notices, venue changes, and symposia.
+                  Receive timetable reminders and official notice alerts directly on your device.
                 </p>
                 <div className="mt-4">
                   <PushSubscribeToggle />
@@ -96,31 +100,31 @@ export default async function ProfilePage() {
             )}
           </div>
 
-          {/* Right column / institutional settings */}
+          {/* Right sidebar */}
           <div className="space-y-6">
             <div>
-              <SectionLabel>Student Accreditation</SectionLabel>
+              <SectionLabel>Student Details</SectionLabel>
               <div className="card divide-y divide-neutral-100">
                 <DetailRow label="Registration No." value={user.regNo ?? "Pending Setup"} muted={!user.regNo} />
                 <DetailRow
-                  label="Institutional Email"
-                  value={user.emailVerifiedAt ? "Verified" : "Pending Verification"}
+                  label="Email"
+                  value={user.emailVerifiedAt ? "Verified" : "Unverified"}
                   good={Boolean(user.emailVerifiedAt)}
                 />
                 <DetailRow
-                  label="Badge Status"
-                  value={user.hasActiveBadge ? `Active (${user.badgeNumber})` : "Unregistered"}
+                  label="Membership Card"
+                  value={user.hasActiveBadge ? `Active (${user.badgeNumber})` : "Inactive"}
                   good={user.hasActiveBadge}
                 />
               </div>
             </div>
 
             <div>
-              <SectionLabel>Account Controls</SectionLabel>
+              <SectionLabel>Account</SectionLabel>
               <div className="card divide-y divide-neutral-100 overflow-hidden">
-                {isEsaAdmin(user) && <SettingsRow href="/admin" label="Administrative Console" />}
+                {isEsaAdmin(user) && <SettingsRow href="/admin" label="Admin Console" />}
                 {user.profileComplete && (
-                  <SettingsRow href="/complete-profile" label="Update Academic Department" />
+                  <SettingsRow href="/complete-profile" label="Update Academic Details" />
                 )}
                 <SignOutButton variant="row" />
               </div>
