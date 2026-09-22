@@ -26,17 +26,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <head>
         {/*
-          Plus Jakarta Sans via a plain stylesheet <link> rather than
-          next/font/google — next/font fetches the font file at BUILD time,
-          which means a Vercel build with any transient trouble reaching
-          Google's servers fails the whole deploy. A runtime <link> can never
-          fail a build; worst case a visitor briefly sees the fallback stack
-          in globals.css before the stylesheet loads.
+          IBM Plex Sans via stylesheet link for resilience and fast loading.
         */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap"
           rel="stylesheet"
         />
       </head>
