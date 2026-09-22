@@ -22,6 +22,7 @@ const createSchema = z.object({
   description: z.string().max(2000).optional(),
   category: z.string().max(80).optional(),
   externalUrl: z.string().url().optional().or(z.literal("")),
+  logoBlobUrl: z.string().optional(),
   isPlatformOwner: z.boolean().optional(),
 });
 
@@ -47,6 +48,7 @@ export async function POST(req: Request) {
       description: parsed.data.description || null,
       category: parsed.data.category || null,
       externalUrl: parsed.data.externalUrl || null,
+      logoBlobUrl: parsed.data.logoBlobUrl || null,
       isPlatformOwner: parsed.data.isPlatformOwner ?? false,
     })
     .returning();

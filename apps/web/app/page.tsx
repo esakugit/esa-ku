@@ -251,7 +251,7 @@ export default async function HomePage() {
                   2026
                 </span>
                 <div>
-                  <h3 className="text-sm font-bold text-ink">Welcome to KU Engineering, Freshmen!</h3>
+                  <h3 className="text-sm font-bold text-ink">Welcome to KU Engineering</h3>
                   <p className="text-xs text-neutral-500">
                     Get settled in: view your department timetables, past examination papers, and join your technical chapters.
                   </p>
@@ -262,7 +262,7 @@ export default async function HomePage() {
                   Class Timetable
                 </Link>
                 <Link href="/resources" className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-100 transition-colors">
-                  Past Papers Vault
+                  Past Papers & Notes
                 </Link>
                 <Link href="/clubs" className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-100 transition-colors">
                   Clubs & Chapters
@@ -319,10 +319,10 @@ export default async function HomePage() {
         <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
           <div className="mb-8">
             <h2 className="text-xs font-bold uppercase tracking-wider text-accent">
-              Academic & Technical Services
+              Academic Services
             </h2>
             <p className="mt-1 text-2xl font-bold tracking-tight text-ink">
-              Essential Resources for Kenyatta University Engineers
+              Essential Resources
             </p>
           </div>
 

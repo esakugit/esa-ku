@@ -60,8 +60,8 @@ export default async function ProfilePage() {
               </div>
             </div>
 
-            {/* Academic Profile setup banner */}
-            {!user.profileComplete && (
+            {/* Academic Profile setup banner (students only) */}
+            {!user.profileComplete && !isEsaAdmin(user) && (
               <div className="card flex items-center justify-between gap-4 border-flag/30 bg-flag-soft p-5">
                 <div>
                   <p className="text-sm font-semibold text-ink">Academic Profile</p>
@@ -78,8 +78,8 @@ export default async function ProfilePage() {
             {/* Large Bank Card Geometry Membership Badge */}
             <BadgeSection
               fullName={user.fullName}
-              hasActiveBadge={user.hasActiveBadge}
-              badgeNumber={user.badgeNumber}
+              hasActiveBadge={user.hasActiveBadge || isEsaAdmin(user)}
+              badgeNumber={user.badgeNumber || (isEsaAdmin(user) ? "ESA/ADMIN/01" : null)}
               regNo={user.regNo}
               tillNumber={env.NEXT_PUBLIC_ESA_TILL_NUMBER}
               tillName={env.NEXT_PUBLIC_ESA_TILL_NAME}
@@ -87,7 +87,7 @@ export default async function ProfilePage() {
               legacyCardImageUrl={user.legacyCardImageUrl}
             />
 
-            {user.hasActiveBadge && (
+            {(user.hasActiveBadge || isEsaAdmin(user)) && (
               <div className="card p-6">
                 <h3 className="text-sm font-bold text-ink">Push Notifications</h3>
                 <p className="mt-1 text-xs text-neutral-500">
@@ -103,19 +103,33 @@ export default async function ProfilePage() {
           {/* Right sidebar */}
           <div className="space-y-6">
             <div>
-              <SectionLabel>Student Details</SectionLabel>
+              <SectionLabel>{isEsaAdmin(user) ? "Account Details" : "Student Details"}</SectionLabel>
               <div className="card divide-y divide-neutral-100">
-                <DetailRow label="Registration No." value={user.regNo ?? "Pending Setup"} muted={!user.regNo} />
-                <DetailRow
-                  label="Email"
-                  value={user.emailVerifiedAt ? "Verified" : "Unverified"}
-                  good={Boolean(user.emailVerifiedAt)}
-                />
-                <DetailRow
-                  label="Membership Card"
-                  value={user.hasActiveBadge ? `Active (${user.badgeNumber})` : "Inactive"}
-                  good={user.hasActiveBadge}
-                />
+                {isEsaAdmin(user) ? (
+                  <>
+                    <DetailRow label="Role" value={ROLE_LABELS[user.role] ?? user.role} good />
+                    <DetailRow
+                      label="Email"
+                      value={user.email}
+                      good={Boolean(user.emailVerifiedAt)}
+                    />
+                    <DetailRow label="Access" value="Full System Authority" good />
+                  </>
+                ) : (
+                  <>
+                    <DetailRow label="Registration No." value={user.regNo ?? "Pending Setup"} muted={!user.regNo} />
+                    <DetailRow
+                      label="Email"
+                      value={user.emailVerifiedAt ? "Verified" : "Unverified"}
+                      good={Boolean(user.emailVerifiedAt)}
+                    />
+                    <DetailRow
+                      label="Membership Card"
+                      value={user.hasActiveBadge ? `Active (${user.badgeNumber})` : "Inactive"}
+                      good={user.hasActiveBadge}
+                    />
+                  </>
+                )}
               </div>
             </div>
 
@@ -123,7 +137,7 @@ export default async function ProfilePage() {
               <SectionLabel>Account</SectionLabel>
               <div className="card divide-y divide-neutral-100 overflow-hidden">
                 {isEsaAdmin(user) && <SettingsRow href="/admin" label="Admin Console" />}
-                {user.profileComplete && (
+                {user.profileComplete && !isEsaAdmin(user) && (
                   <SettingsRow href="/complete-profile" label="Update Academic Details" />
                 )}
                 <SignOutButton variant="row" />

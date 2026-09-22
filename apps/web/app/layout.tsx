@@ -3,22 +3,30 @@ import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { ToastProvider } from "@/components/Toast";
 import { PageTransition } from "@/components/PageTransition";
+import { InstallAppPrompt } from "@/components/InstallAppPrompt";
 
 export const metadata: Metadata = {
   title: "ESA Campus Platform",
+  applicationName: "ESA KU",
   description:
-    "Engineering Students Association — Kenyatta University. Membership Badge, events, timetable, and past papers.",
+    "Engineering Students Association — Kenyatta University. Membership Card, events, timetable, and past papers.",
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.png",
     apple: "/icons/icon-192.png",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "ESA KU",
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#2E3F92",
+  themeColor: "#2554D7",
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -39,6 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ToastProvider>
           <PageTransition>{children}</PageTransition>
           <ServiceWorkerRegister />
+          <InstallAppPrompt />
         </ToastProvider>
       </body>
     </html>

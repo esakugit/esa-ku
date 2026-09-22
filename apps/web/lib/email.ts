@@ -61,3 +61,42 @@ export async function sendBadgeDecisionEmail(
     html: `<p>${body}</p>`,
   });
 }
+
+export async function sendClassReminderEmail({
+  to,
+  courseCode,
+  courseName,
+  time,
+  venue,
+}: {
+  to: string;
+  courseCode: string;
+  courseName: string;
+  time: string;
+  venue?: string | null;
+}) {
+  const transport = getTransport();
+  const subject = `Class Reminder: ${courseCode} starts at ${time}`;
+  const text = `Hello,\n\nYour lecture for ${courseCode} (${courseName}) is scheduled for ${time}${venue ? ` at ${venue}` : ""}.\n\nView timetable: ${env.NEXT_PUBLIC_APP_URL}/timetable\n\n— Kenyatta University Engineering Students Association`;
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;background:#ffffff">
+      <p style="font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;color:#2554d7;margin:0 0 6px">Class Reminder</p>
+      <h2 style="color:#0f172a;margin:0 0 12px;font-size:20px">${courseCode} · ${courseName}</h2>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin:16px 0">
+        <p style="margin:4px 0;color:#334155;font-size:14px"><strong>Time:</strong> ${time}</p>
+        ${venue ? `<p style="margin:4px 0;color:#334155;font-size:14px"><strong>Venue:</strong> ${venue}</p>` : ""}
+      </div>
+      <a href="${env.NEXT_PUBLIC_APP_URL}/timetable" style="display:inline-block;background:#2554d7;color:#ffffff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600;font-size:13px;margin-top:8px">Open Timetable</a>
+      <p style="font-size:11px;color:#94a3b8;margin-top:24px;border-top:1px solid #f1f5f9;padding-top:12px">Engineering Students Association · Kenyatta University</p>
+    </div>
+  `;
+
+  await transport.sendMail({
+    from: `"ESA Class Reminders" <${env.GMAIL_USER}>`,
+    to,
+    subject,
+    text,
+    html,
+  });
+}

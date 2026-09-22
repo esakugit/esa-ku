@@ -6,6 +6,7 @@ import { useToast } from "@/components/Toast";
 import { SiteHeroTab } from "./SiteHeroTab";
 import { AnnouncementsTab } from "./AnnouncementsTab";
 import { EventsTab } from "./EventsTab";
+import { MembersTab } from "./MembersTab";
 
 type Department = { id: number; name: string; code: string };
 type Course = { id: number; departmentId: number; code: string; name: string };
@@ -16,6 +17,7 @@ type Club = {
   description: string | null;
   category: string | null;
   externalUrl: string | null;
+  logoBlobUrl: string | null;
   isPlatformOwner: boolean;
 };
 
@@ -32,6 +34,7 @@ type LegacyMember = {
 
 const TABS = [
   "Overview",
+  "Members",
   "Site & Hero",
   "Announcements",
   "Events",
@@ -45,6 +48,7 @@ type Tab = (typeof TABS)[number];
 
 const TAB_ICONS: Record<Tab, string> = {
   Overview: "◧",
+  Members: "👥",
   "Site & Hero": "🎨",
   Announcements: "📢",
   Events: "📅",
@@ -76,6 +80,7 @@ export function AdminConsole() {
       </div>
 
       {tab === "Overview" && <OverviewTab onNavigate={setTab} />}
+      {tab === "Members" && <MembersTab />}
       {tab === "Site & Hero" && <SiteHeroTab />}
       {tab === "Announcements" && <AnnouncementsTab />}
       {tab === "Events" && <EventsTab />}
@@ -496,7 +501,13 @@ function CoursesTab() {
 // Clubs
 // ---------------------------------------------------------------------------
 
-type ClubDraft = { name: string; category: string; externalUrl: string; description: string };
+type ClubDraft = {
+  name: string;
+  category: string;
+  externalUrl: string;
+  logoBlobUrl: string;
+  description: string;
+};
 
 function ClubsTab() {
   const [rows, setRows] = useState<Club[]>([]);
@@ -504,12 +515,19 @@ function ClubsTab() {
     name: "",
     category: "",
     externalUrl: "",
+    logoBlobUrl: "",
     description: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [adminEmail, setAdminEmail] = useState<Record<number, string>>({});
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [editForm, setEditForm] = useState<ClubDraft>({ name: "", category: "", externalUrl: "", description: "" });
+  const [editForm, setEditForm] = useState<ClubDraft>({
+    name: "",
+    category: "",
+    externalUrl: "",
+    logoBlobUrl: "",
+    description: "",
+  });
   const [editError, setEditError] = useState<string | null>(null);
   const { success, error: toastError, info } = useToast();
 
@@ -561,6 +579,7 @@ function ClubsTab() {
       name: c.name,
       category: c.category ?? "",
       externalUrl: c.externalUrl ?? "",
+      logoBlobUrl: c.logoBlobUrl ?? "",
       description: c.description ?? "",
     });
     setEditError(null);
@@ -612,6 +631,15 @@ function ClubsTab() {
           </div>
         </div>
         <div>
+          <label className="field-label">Logo Image URL</label>
+          <input
+            className="field-input"
+            placeholder="/brand/logo.png or https://..."
+            value={form.logoBlobUrl}
+            onChange={(e) => setForm((f) => ({ ...f, logoBlobUrl: e.target.value }))}
+          />
+        </div>
+        <div>
           <label className="field-label">Description</label>
           <textarea
             className="field-input"
@@ -647,6 +675,14 @@ function ClubsTab() {
                   onChange={(e) => setEditForm((f) => ({ ...f, externalUrl: e.target.value }))}
                 />
               </div>
+              <div>
+                <input
+                  className="field-input"
+                  placeholder="Logo URL (/brand/logo.png or https://...)"
+                  value={editForm.logoBlobUrl}
+                  onChange={(e) => setEditForm((f) => ({ ...f, logoBlobUrl: e.target.value }))}
+                />
+              </div>
               <textarea
                 className="field-input"
                 rows={2}
@@ -666,11 +702,24 @@ function ClubsTab() {
           ) : (
             <li key={c.id} className="card p-4">
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-ink">
-                    {c.name} {c.isPlatformOwner && <span className="badge-pill ml-1">ESA</span>}
-                  </p>
-                  <p className="text-xs text-neutral-500">{c.category || "Uncategorized"}</p>
+                <div className="flex items-center gap-3">
+                  {c.logoBlobUrl ? (
+                    <img
+                      src={c.logoBlobUrl}
+                      alt={c.name}
+                      className="h-10 w-10 shrink-0 rounded-lg object-contain bg-neutral-50 p-1 border border-neutral-100"
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-xs font-bold text-neutral-600">
+                      {c.name.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-semibold text-ink">
+                      {c.name} {c.isPlatformOwner && <span className="badge-pill ml-1">ESA</span>}
+                    </p>
+                    <p className="text-xs text-neutral-500">{c.category || "Uncategorized"}</p>
+                  </div>
                 </div>
                 <div className="flex gap-3">
                   <button onClick={() => startEdit(c)} className="text-sm text-accent hover:underline">

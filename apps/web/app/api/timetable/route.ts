@@ -3,11 +3,12 @@ import { z } from "zod";
 import { db, timetableEntries, cohorts } from "@esa/db";
 import { eq } from "drizzle-orm";
 import { requireApiUser, isResponse } from "@/lib/api";
-import { isClassRepFor } from "@/lib/roles";
+import { isClassRepFor, isEsaAdmin } from "@/lib/roles";
 
 /**
  * A student's own cohort timetable is free for everyone (spec §02); browsing
  * any OTHER cohort's timetable is the cross-department Badge perk.
+ * ESA and Super Admins can view all timetables.
  */
 export async function GET(req: Request) {
   const user = await requireApiUser();
@@ -17,8 +18,9 @@ export async function GET(req: Request) {
   const cohortId = Number(searchParams.get("cohortId"));
   if (!cohortId) return NextResponse.json({ error: "cohortId required" }, { status: 400 });
 
+  const isAdmin = isEsaAdmin(user);
   const isOwnCohort = user.cohortId === cohortId;
-  if (!isOwnCohort && !user.hasActiveBadge) {
+  if (!isAdmin && !isOwnCohort && !user.hasActiveBadge) {
     return NextResponse.json(
       { error: "An active Badge is required to view another cohort's timetable." },
       { status: 403 },

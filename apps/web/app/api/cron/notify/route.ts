@@ -3,6 +3,7 @@ import { db, timetableEntries, users, badges, events, subscriptions } from "@esa
 import { and, eq, gte, lte, isNotNull } from "drizzle-orm";
 import { env } from "@/lib/env";
 import { notifyUser } from "@/lib/push";
+import { sendClassReminderEmail } from "@/lib/email";
 
 /**
  * Called on a schedule (GitHub Actions in production — Vercel Hobby's Cron
@@ -70,6 +71,60 @@ export async function POST(req: Request) {
         body: `${entry.course.name} at ${entry.startTime.slice(0, 5)}${entry.venue ? ` · ${entry.venue}` : ""}`,
         link,
       });
+
+      // Email notification directly to student's inbox
+      if (student.email && env.GMAIL_USER && env.GMAIL_APP_PASSWORD) {
+        try {
+          await sendClassReminderEmail({
+            to: student.email,
+            courseCode: entry.course.code,
+            courseName: entry.course.name,
+            time: entry.startTime.slice(0, 5),
+            venue: entry.venue,
+          });
+        } catch (err) {
+          console.error(`Failed to send email reminder to ${student.email}:`, err);
+        }
+      }
+      results.classReminders++;
+    }
+
+    // Also notify individual students who explicitly toggled reminders for this course
+    const courseFollowers = await db.query.subscriptions.findMany({
+      where: and(eq(subscriptions.subjectType, "course"), eq(subscriptions.subjectId, entry.courseId)),
+    });
+
+    for (const sub of courseFollowers) {
+      if (!badgedUserIds.has(sub.userId)) continue;
+      const subUser = await db.query.users.findFirst({ where: eq(users.id, sub.userId) });
+      if (!subUser) continue;
+
+      const alreadySent = await db.query.notificationsLog.findFirst({
+        where: (n, { and: andOp, eq: eqOp }) => andOp(eqOp(n.userId, subUser.id), eqOp(n.link, link)),
+      });
+      if (alreadySent) continue;
+
+      await notifyUser({
+        userId: subUser.id,
+        type: "class_reminder",
+        title: `Class starting soon: ${entry.course.code}`,
+        body: `${entry.course.name} at ${entry.startTime.slice(0, 5)}${entry.venue ? ` · ${entry.venue}` : ""}`,
+        link,
+      });
+
+      if (subUser.email && env.GMAIL_USER && env.GMAIL_APP_PASSWORD) {
+        try {
+          await sendClassReminderEmail({
+            to: subUser.email,
+            courseCode: entry.course.code,
+            courseName: entry.course.name,
+            time: entry.startTime.slice(0, 5),
+            venue: entry.venue,
+          });
+        } catch (err) {
+          console.error(`Failed to send email reminder to ${subUser.email}:`, err);
+        }
+      }
       results.classReminders++;
     }
   }

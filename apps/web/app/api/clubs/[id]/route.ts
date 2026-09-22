@@ -30,6 +30,7 @@ const patchSchema = z.object({
   description: z.string().max(2000).optional(),
   category: z.string().max(80).optional(),
   externalUrl: z.string().url().optional().or(z.literal("")),
+  logoBlobUrl: z.string().optional().nullable(),
 });
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -50,6 +51,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       ...(parsed.data.description !== undefined ? { description: parsed.data.description || null } : {}),
       ...(parsed.data.category !== undefined ? { category: parsed.data.category || null } : {}),
       ...(parsed.data.externalUrl !== undefined ? { externalUrl: parsed.data.externalUrl || null } : {}),
+      ...(parsed.data.logoBlobUrl !== undefined ? { logoBlobUrl: parsed.data.logoBlobUrl || null } : {}),
     })
     .where(eq(clubs.id, clubId))
     .returning();

@@ -32,21 +32,36 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ slu
         </Link>
 
         <header className="card p-6 sm:p-8 mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-bold text-ink">
-                  {club.name}
-                </h1>
-                {club.isPlatformOwner && (
-                  <span className="badge-pill ml-1 !text-xs">ESA Lead</span>
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+            <div className="flex items-start gap-4">
+              {club.logoBlobUrl || club.isPlatformOwner ? (
+                <div className="flex h-16 w-16 flex-none items-center justify-center rounded-xl border border-neutral-200 bg-white p-2 shadow-xs">
+                  <img
+                    src={club.logoBlobUrl || "/brand/logo.png"}
+                    alt={club.name}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="flex h-16 w-16 flex-none items-center justify-center rounded-xl bg-accent-soft font-bold text-accent text-lg shadow-xs">
+                  {club.name.slice(0, 3).toUpperCase()}
+                </div>
+              )}
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-ink">
+                    {club.name}
+                  </h1>
+                  {club.isPlatformOwner && (
+                    <span className="badge-pill !text-xs font-semibold">Official Society</span>
+                  )}
+                </div>
+                {club.category && (
+                  <p className="mt-1 text-xs font-semibold text-accent uppercase tracking-wider">
+                    {club.category}
+                  </p>
                 )}
               </div>
-              {club.category && (
-                <p className="mt-1 text-xs font-semibold text-accent uppercase tracking-wider">
-                  {club.category}
-                </p>
-              )}
             </div>
 
             <div className="flex items-center gap-2">
@@ -55,7 +70,7 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ slu
                 isLoggedIn={Boolean(user)}
                 hasActiveBadge={user?.hasActiveBadge ?? false}
               />
-              {club.externalUrl && (
+              {!club.isPlatformOwner && club.externalUrl && (
                 <a
                   href={club.externalUrl}
                   target="_blank"
@@ -69,7 +84,7 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ slu
           </div>
 
           {club.description && (
-            <p className="mt-4 text-xs sm:text-sm leading-relaxed text-neutral-600 max-w-3xl">
+            <p className="mt-5 text-xs sm:text-sm leading-relaxed text-neutral-600 max-w-3xl">
               {club.description}
             </p>
           )}
