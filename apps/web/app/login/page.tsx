@@ -30,9 +30,40 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const [resendStatus, setResendStatus] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+
+  async function handleResendVerification() {
+    if (!email) {
+      setError("Please enter your email above to receive a verification link.");
+      return;
+    }
+    setResending(true);
+    setResendStatus(null);
+    try {
+      const res = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Failed to resend verification link.");
+      } else {
+        setResendStatus(data.message ?? "Verification link sent! Check your inbox.");
+        setError(null);
+      }
+    } catch {
+      setError("Network error — please try again.");
+    } finally {
+      setResending(false);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setResendStatus(null);
     setLoading(true);
     try {
       const res = await fetch("/api/auth/login", {
@@ -54,6 +85,8 @@ function LoginForm() {
     }
   }
 
+  const isVerificationError = error?.toLowerCase().includes("verify your email");
+
   return (
     <main className="mx-auto max-w-md px-5 py-10">
       <Image src="/brand/logo.png" alt="ESA-KU" width={64} height={37} className="mb-4" />
@@ -66,6 +99,12 @@ function LoginForm() {
           }`}
         >
           {verifyNotice.text}
+        </div>
+      )}
+
+      {resendStatus && (
+        <div className="card mb-4 p-4 text-sm border-brandgreen/30 bg-brandgreen-soft text-brandgreen">
+          {resendStatus}
         </div>
       )}
 
@@ -97,7 +136,21 @@ function LoginForm() {
           />
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <div className="space-y-2">
+            <p className="text-sm text-red-600">{error}</p>
+            {isVerificationError && (
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resending}
+                className="text-xs font-semibold text-accent hover:underline disabled:opacity-50"
+              >
+                {resending ? "Sending link..." : "Resend verification link"}
+              </button>
+            )}
+          </div>
+        )}
 
         <button type="submit" disabled={loading} className="btn-primary w-full">
           {loading ? "Logging in..." : "Log in"}
