@@ -7,40 +7,54 @@ import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 import { BottomNav } from "@/components/BottomNav";
 
 export default async function HomePage() {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser().catch(() => null);
 
-  const events = await db.query.events.findMany({
-    where: (e, { isNotNull, gte, and }) =>
-      and(isNotNull(e.publishedAt), gte(e.startAt, new Date(Date.now() - 1000 * 60 * 60 * 6))),
-    orderBy: (e, { asc }) => asc(e.startAt),
-    with: { club: true },
-    limit: 6,
-  });
+  // Defensive: if DB is unreachable, show page with defaults rather than 500
+  // Using a broad type here because the `with: { club: true }` relation is
+  // resolved at runtime — TypeScript can't infer it from the bare findMany signature.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let events: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let featuredEvent: any = undefined;
+  let heroSettings: { heroTitle?: string; heroSubtitle?: string; heroEyebrow?: string; heroImageUrl?: string } | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let pinnedAnnouncement: any = undefined;
 
-  const featuredEvent =
-    (await db.query.events.findFirst({
+  try {
+    events = await db.query.events.findMany({
+      where: (e, { isNotNull, gte, and }) =>
+        and(isNotNull(e.publishedAt), gte(e.startAt, new Date(Date.now() - 1000 * 60 * 60 * 6))),
+      orderBy: (e, { asc }) => asc(e.startAt),
+      with: { club: true },
+      limit: 6,
+    });
+
+    const featuredEventRow = await db.query.events.findFirst({
       where: (e, { and, isNotNull, eq }) => and(isNotNull(e.publishedAt), eq(e.isFeatured, true)),
       with: { club: true },
       orderBy: (e, { asc }) => asc(e.startAt),
-    })) ?? events[0];
+    });
+    featuredEvent = featuredEventRow ?? events[0];
 
-  const heroSettingsRow = await db.query.platformSettings.findFirst({
-    where: (s, { eq }) => eq(s.key, "hero"),
-  });
+    const heroSettingsRow = await db.query.platformSettings.findFirst({
+      where: (s, { eq }) => eq(s.key, "hero"),
+    });
+    heroSettings = heroSettingsRow
+      ? (JSON.parse(heroSettingsRow.value) as {
+          heroTitle?: string;
+          heroSubtitle?: string;
+          heroEyebrow?: string;
+          heroImageUrl?: string;
+        })
+      : null;
 
-  const heroSettings = heroSettingsRow
-    ? (JSON.parse(heroSettingsRow.value) as {
-        heroTitle?: string;
-        heroSubtitle?: string;
-        heroEyebrow?: string;
-        heroImageUrl?: string;
-      })
-    : null;
-
-  const pinnedAnnouncement = await db.query.announcements.findFirst({
-    where: (a, { eq }) => eq(a.pinned, true),
-    orderBy: (a, { desc }) => desc(a.publishedAt),
-  });
+    pinnedAnnouncement = await db.query.announcements.findFirst({
+      where: (a, { eq }) => eq(a.pinned, true),
+      orderBy: (a, { desc }) => desc(a.publishedAt),
+    });
+  } catch (err) {
+    console.error("[HomePage] DB query failed:", err);
+  }
 
   return (
     <div className="min-h-screen bg-surface flex flex-col font-sans text-ink">

@@ -8,6 +8,7 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["@esa/db"],
   outputFileTracingRoot: path.join(__dirname, "../../"),
+  serverExternalPackages: ["pg", "pg-native"],
 };
 
 export default nextConfig;

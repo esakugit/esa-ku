@@ -14,10 +14,15 @@ export default async function NotificationsPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const officialAnnouncements = await db.query.announcements.findMany({
-    orderBy: [desc(announcements.pinned), desc(announcements.publishedAt)],
-    limit: 20,
-  });
+  let officialAnnouncements: Awaited<ReturnType<typeof db.query.announcements.findMany>> = [];
+  try {
+    officialAnnouncements = await db.query.announcements.findMany({
+      orderBy: [desc(announcements.pinned), desc(announcements.publishedAt)],
+      limit: 20,
+    });
+  } catch (err) {
+    console.error("[NotificationsPage] DB query failed:", err);
+  }
 
   return (
     <div className="min-h-screen bg-surface flex flex-col font-sans text-ink">
