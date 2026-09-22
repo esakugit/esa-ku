@@ -13,6 +13,7 @@ type EventItem = {
   endAt: string | null;
   coverImageBlobUrl: string | null;
   registrationUrl: string | null;
+  cost: string | null;
   isFeatured: boolean;
   club: { id: number; name: string; slug: string; logoBlobUrl: string | null };
 };
@@ -121,8 +122,8 @@ export function EventsFeedView({
                 </p>
               </div>
 
-              {/* Key Details Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              {/* Key Details Grid (Adaptive: 2 cols when free/unannounced, 3 cols when cost added) */}
+              <div className={`grid grid-cols-1 ${featured.cost ? "sm:grid-cols-3" : "sm:grid-cols-2"} gap-3 pt-2`}>
                 <div className="rounded-xl border border-neutral-100 bg-neutral-50/80 p-3.5 space-y-1">
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Date &amp; Schedule</p>
                   <p className="text-sm font-bold text-ink">
@@ -141,6 +142,14 @@ export function EventsFeedView({
                   <p className="text-sm font-bold text-ink">{featured.location || "Trademark Hotel"}</p>
                   <p className="text-xs text-neutral-500">Nairobi, Kenya</p>
                 </div>
+
+                {featured.cost ? (
+                  <div className="rounded-xl border border-accent/20 bg-accent-soft/50 p-3.5 space-y-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-accent">Admission / Tickets</p>
+                    <p className="text-sm font-extrabold text-ink">{featured.cost}</p>
+                    <p className="text-xs text-neutral-500">Official Pass</p>
+                  </div>
+                ) : null}
               </div>
 
               {/* Evening Palette */}
@@ -245,9 +254,16 @@ export function EventsFeedView({
                   )}
 
                   <div className="flex items-center justify-between gap-2">
-                    <span className="rounded bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-neutral-700">
-                      {e.club.name}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="rounded bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-neutral-700">
+                        {e.club.name}
+                      </span>
+                      {e.cost && (
+                        <span className="rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200">
+                          🎟️ {e.cost}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-xs text-neutral-500">
                       {new Date(e.startAt).toLocaleDateString("en-KE", {
                         day: "numeric",

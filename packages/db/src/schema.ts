@@ -219,6 +219,7 @@ export const events = pgTable("events", {
   endAt: timestamp("end_at", { withTimezone: true }),
   coverImageBlobUrl: text("cover_image_blob_url"),
   registrationUrl: text("registration_url"),
+  cost: varchar("cost", { length: 100 }), // e.g. "Free", "KES 1,500", "KES 2,000 / KES 1,500 Members"
   isFeatured: boolean("is_featured").notNull().default(false),
   createdBy: integer("created_by")
     .references(() => users.id, { onDelete: "set null" }),

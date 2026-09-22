@@ -15,6 +15,7 @@ type EventItem = {
   endAt: string | null;
   coverImageBlobUrl: string | null;
   registrationUrl: string | null;
+  cost: string | null;
   isFeatured: boolean;
   club: { name: string };
 };
@@ -31,6 +32,7 @@ export function EventsTab() {
     title: "",
     description: "",
     location: "",
+    cost: "",
     startAt: "",
     endAt: "",
     coverImageBlobUrl: "",
@@ -69,6 +71,7 @@ export function EventsTab() {
       title: event.title,
       description: event.description || "",
       location: event.location || "",
+      cost: event.cost || "",
       startAt: event.startAt ? new Date(event.startAt).toISOString().slice(0, 16) : "",
       endAt: event.endAt ? new Date(event.endAt).toISOString().slice(0, 16) : "",
       coverImageBlobUrl: event.coverImageBlobUrl || "",
@@ -92,6 +95,7 @@ export function EventsTab() {
             title: form.title,
             description: form.description,
             location: form.location,
+            cost: form.cost || null,
             startAt: form.startAt,
             endAt: form.endAt || null,
             coverImageBlobUrl: form.coverImageBlobUrl,
@@ -193,6 +197,7 @@ export function EventsTab() {
               title: "",
               description: "",
               location: "",
+              cost: "",
               startAt: "",
               endAt: "",
               coverImageBlobUrl: "",
@@ -250,6 +255,17 @@ export function EventsTab() {
                 placeholder="e.g. 8-4-4 Amphitheatre"
                 value={form.location}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label className="field-label">Ticket / Admission Cost (Optional)</label>
+              <input
+                type="text"
+                className="field-input"
+                placeholder="e.g. Free, KES 1,500, or KES 2,000 / KES 1,500 Members"
+                value={form.cost}
+                onChange={(e) => setForm({ ...form, cost: e.target.value })}
               />
             </div>
 
@@ -439,8 +455,13 @@ export function EventsTab() {
                   <h3 className="text-base font-bold text-ink">{e.title}</h3>
                   {e.description && <p className="text-xs text-neutral-600 line-clamp-2">{e.description}</p>}
 
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-neutral-400 pt-1">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-400 pt-1">
                     {e.location && <span>📍 {e.location}</span>}
+                    {e.cost && (
+                      <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        🎟️ {e.cost}
+                      </span>
+                    )}
                     {e.registrationUrl && (
                       <span className="text-accent font-medium">✓ RSVP Link Active</span>
                     )}

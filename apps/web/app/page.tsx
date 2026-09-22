@@ -208,8 +208,8 @@ export default async function HomePage() {
                       </p>
                     </div>
 
-                    {/* Key Logistics */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    {/* Key Logistics (Adaptive: 2 cols when unannounced/free, 3 cols when cost is added) */}
+                    <div className={`grid grid-cols-1 ${featuredEvent.cost ? "sm:grid-cols-3" : "sm:grid-cols-2"} gap-3 pt-1`}>
                       <div className="rounded-xl border border-neutral-100 bg-neutral-50/80 p-3 space-y-1">
                         <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Date &amp; Time</p>
                         <p className="text-sm font-bold text-ink">
@@ -228,6 +228,14 @@ export default async function HomePage() {
                         <p className="text-sm font-bold text-ink">{featuredEvent.location || "Trademark Hotel"}</p>
                         <p className="text-xs text-neutral-500">Nairobi, Kenya</p>
                       </div>
+
+                      {featuredEvent.cost ? (
+                        <div className="rounded-xl border border-accent/20 bg-accent-soft/50 p-3 space-y-1">
+                          <p className="text-[11px] font-semibold uppercase tracking-wider text-accent">Admission / Tickets</p>
+                          <p className="text-sm font-extrabold text-ink">{featuredEvent.cost}</p>
+                          <p className="text-xs text-neutral-500">Official Pass</p>
+                        </div>
+                      ) : null}
                     </div>
 
                     {/* Evening Palette */}

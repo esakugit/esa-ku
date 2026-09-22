@@ -34,6 +34,7 @@ const createSchema = z.object({
   endAt: z.string().datetime().or(z.string().min(1)).optional(),
   coverImageBlobUrl: z.string().max(1000).optional().or(z.literal("")),
   registrationUrl: z.string().max(1000).optional().or(z.literal("")),
+  cost: z.string().max(100).optional().nullable(),
   isFeatured: z.boolean().optional(),
 });
 
@@ -63,6 +64,7 @@ export async function POST(req: Request) {
       endAt: parsed.data.endAt ? new Date(parsed.data.endAt) : null,
       coverImageBlobUrl: parsed.data.coverImageBlobUrl || null,
       registrationUrl: parsed.data.registrationUrl || null,
+      cost: parsed.data.cost || null,
       isFeatured: Boolean(parsed.data.isFeatured),
       createdBy: user.id,
       publishedAt: new Date(),

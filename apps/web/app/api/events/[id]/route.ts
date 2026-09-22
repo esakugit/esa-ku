@@ -13,6 +13,7 @@ const patchSchema = z.object({
   endAt: z.string().min(1).optional().nullable(),
   coverImageBlobUrl: z.string().max(1000).optional().nullable().or(z.literal("")),
   registrationUrl: z.string().max(1000).optional().nullable().or(z.literal("")),
+  cost: z.string().max(100).optional().nullable(),
   isFeatured: z.boolean().optional(),
 });
 
@@ -39,6 +40,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       ...(parsed.data.endAt !== undefined ? { endAt: parsed.data.endAt ? new Date(parsed.data.endAt) : null } : {}),
       ...(parsed.data.coverImageBlobUrl !== undefined ? { coverImageBlobUrl: parsed.data.coverImageBlobUrl || null } : {}),
       ...(parsed.data.registrationUrl !== undefined ? { registrationUrl: parsed.data.registrationUrl || null } : {}),
+      ...(parsed.data.cost !== undefined ? { cost: parsed.data.cost || null } : {}),
       ...(parsed.data.isFeatured !== undefined ? { isFeatured: parsed.data.isFeatured } : {}),
     })
     .where(eq(events.id, Number(id)))
