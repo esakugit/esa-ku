@@ -56,6 +56,13 @@ export function BadgeSection({
   const [downloading, setDownloading] = useState(false);
 
   async function handleDownloadCard() {
+    if (!hasActiveBadge) {
+      const el = document.getElementById("membership-activation-box");
+      el?.scrollIntoView({ behavior: "smooth" });
+      const input = el?.querySelector("input");
+      input?.focus();
+      return;
+    }
     setDownloading(true);
     try {
       if (viewMode === "physical" && legacyCardImageUrl) {
@@ -167,18 +174,28 @@ export function BadgeSection({
           </div>
         </div>
 
-        {/* 1. Physical Scanned Card View */}
-        {viewMode === "physical" && legacyCardImageUrl ? (
-          <div className="relative mx-auto w-full max-w-[520px] aspect-[85.6/54] overflow-hidden rounded-2xl border border-neutral-300 bg-neutral-900 shadow-xl">
-            <img
-              src={legacyCardImageUrl}
-              alt={`${fullName}'s ESA membership card`}
-              className="h-full w-full object-cover"
-            />
-          </div>
-        ) : viewMode === "signature" ? (
-          /* 2. Official Excom Signature Card (with Wireframe Logo Silhouette Watermark & Pill Fields) */
-          <div className="relative mx-auto w-full max-w-[520px] aspect-[85.6/54] select-none overflow-hidden rounded-2xl border border-neutral-700/80 bg-[#0c1017] p-4 sm:p-5 text-white shadow-2xl transition-transform hover:scale-[1.01]">
+        {/* ─── Master Card Container (with Frosted Glass & Lock for Inactive Members) ── */}
+        <div className="relative mx-auto w-full max-w-[520px] aspect-[85.6/54] overflow-hidden rounded-2xl border border-neutral-700/60 shadow-2xl">
+          {/* Card Surface: blurred, dimmed & unclickable if !hasActiveBadge */}
+          <div
+            className={`h-full w-full transition-all duration-300 ${
+              !hasActiveBadge
+                ? "filter blur-[6.5px] brightness-[0.55] scale-[1.02] select-none pointer-events-none"
+                : ""
+            }`}
+          >
+            {/* 1. Physical Scanned Card View */}
+            {viewMode === "physical" && legacyCardImageUrl ? (
+              <div className="relative h-full w-full overflow-hidden bg-neutral-900">
+                <img
+                  src={legacyCardImageUrl}
+                  alt={`${fullName}'s ESA membership card`}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            ) : viewMode === "signature" ? (
+              /* 2. Official Excom Signature Card (with Wireframe Logo Silhouette Watermark & Pill Fields) */
+              <div className="relative h-full w-full select-none overflow-hidden bg-[#0c1017] p-4 sm:p-5 text-white">
             {/* Dark carbon diagonal grain texture */}
             <div
               className="pointer-events-none absolute inset-0 opacity-[0.07]"
@@ -344,7 +361,7 @@ export function BadgeSection({
           </div>
         ) : (
           /* 3. Executive EMV Smart Chip Card (Alternative View) */
-          <div className="relative mx-auto w-full max-w-[520px] aspect-[85.6/54] select-none overflow-hidden rounded-2xl border border-neutral-800 bg-gradient-to-tr from-[#0a1128] via-[#101f42] to-[#1c356e] p-5 sm:p-6 text-white shadow-2xl transition-transform hover:scale-[1.01]">
+          <div className="relative h-full w-full select-none overflow-hidden bg-gradient-to-tr from-[#0a1128] via-[#101f42] to-[#1c356e] p-5 sm:p-6 text-white">
             {/* Background subtle micro-circuit watermark pattern */}
             <div
               className="pointer-events-none absolute inset-0 opacity-[0.06]"
@@ -462,51 +479,149 @@ export function BadgeSection({
             </div>
           </div>
         )}
+          </div>
+
+          {/* Frosted Glass Overlay with Lock or Pending Verification badge */}
+          {!hasActiveBadge && (
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 sm:p-6 text-center bg-black/45 backdrop-blur-xs select-none">
+              {pending ? (
+                <div className="space-y-2 max-w-[340px]">
+                  <div className="mx-auto flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 shadow-lg shadow-amber-500/10 backdrop-blur-md">
+                    <svg className="h-5 w-5 sm:h-6 sm:w-6 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-300 border border-amber-500/30">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
+                      Verification In Progress
+                    </span>
+                    <h4 className="mt-1.5 text-xs sm:text-sm font-extrabold text-white tracking-wide">
+                      M-Pesa Code Submitted
+                    </h4>
+                    <p className="mt-1 text-[10.5px] sm:text-xs text-neutral-300 leading-relaxed">
+                      Reference <span className="font-mono font-bold text-amber-200">{pending.paymentReference}</span> is being verified by Treasury. Your card and official number will unlock once approved.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2 sm:space-y-2.5 max-w-[360px]">
+                  <div className="mx-auto flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-neutral-900/80 border border-neutral-700/80 text-amber-400 shadow-xl backdrop-blur-md">
+                    <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-800/80 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neutral-300 border border-neutral-700">
+                      Membership Card Locked
+                    </span>
+                    <h4 className="mt-1 text-xs sm:text-sm font-extrabold text-white tracking-wide">
+                      Official Pass Preview
+                    </h4>
+                    <p className="mt-1 text-[10.5px] sm:text-xs text-neutral-300 leading-relaxed px-2">
+                      Activate your annual ESA membership to reveal your verified card, official number & downloadable pass.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById("membership-activation-box");
+                      if (el) {
+                        el.scrollIntoView({ behavior: "smooth" });
+                        const input = el.querySelector("input");
+                        input?.focus();
+                      }
+                    }}
+                    className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-1.5 sm:py-2 text-xs font-bold text-white shadow-lg hover:bg-accent/90 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <span>Activate via M-Pesa (KES {badgeFee})</span>
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* ─── Card Action Toolbar (Download & Offline Save) ─────────── */}
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 max-w-[520px] mx-auto px-1">
           <div className="flex items-center gap-1.5 text-xs text-neutral-500">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span>{hasActiveBadge ? "Verified Digital Pass" : "Digital Preview Card"}</span>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleDownloadCard}
-            disabled={downloading}
-            className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3.5 py-1.5 text-xs font-bold text-neutral-800 shadow-xs hover:bg-neutral-50 hover:border-neutral-400 active:scale-[0.98] transition-all disabled:opacity-50"
-            title="Download high-resolution card for offline wallet or printing"
-          >
-            {downloading ? (
+            {hasActiveBadge ? (
               <>
-                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-neutral-400 border-t-accent" />
-                <span>Generating Card...</span>
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="text-neutral-700 font-medium">Verified Digital Pass</span>
+              </>
+            ) : pending ? (
+              <>
+                <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                <span className="text-amber-700 font-medium">Pending Treasury Approval</span>
               </>
             ) : (
               <>
-                <svg
-                  className="h-3.5 w-3.5 text-accent"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                  />
-                </svg>
-                <span>Download Card (PNG)</span>
+                <span className="h-2 w-2 rounded-full bg-neutral-400" />
+                <span>Locked Preview</span>
               </>
             )}
-          </button>
+          </div>
+
+          {hasActiveBadge ? (
+            <button
+              type="button"
+              onClick={handleDownloadCard}
+              disabled={downloading}
+              className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3.5 py-1.5 text-xs font-bold text-neutral-800 shadow-xs hover:bg-neutral-50 hover:border-neutral-400 active:scale-[0.98] transition-all disabled:opacity-50"
+              title="Download high-resolution card for offline wallet or printing"
+            >
+              {downloading ? (
+                <>
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-neutral-400 border-t-accent" />
+                  <span>Generating Card...</span>
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="h-3.5 w-3.5 text-accent"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    />
+                  </svg>
+                  <span>Download Card (PNG)</span>
+                </>
+              )}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById("membership-activation-box");
+                el?.scrollIntoView({ behavior: "smooth" });
+                const input = el?.querySelector("input");
+                input?.focus();
+              }}
+              className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-100 px-3.5 py-1.5 text-xs font-medium text-neutral-500 hover:bg-neutral-200/80 transition-all cursor-pointer"
+              title="Activate your membership to unlock card download"
+            >
+              <svg className="h-3.5 w-3.5 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <span>Download Locked</span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* ─── 2. Activation / Payment Box (Shown when not active) ──────────── */}
       {!hasActiveBadge && (
-        <div className="card p-5 space-y-4">
+        <div id="membership-activation-box" className="card p-5 space-y-4">
           <div>
             <h3 className="text-sm font-bold text-ink">Activate Membership Card</h3>
             <p className="mt-0.5 text-xs sm:text-sm text-neutral-600">
