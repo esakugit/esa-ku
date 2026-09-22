@@ -23,7 +23,7 @@ const envSchema = z.object({
   // Badge payment (spec §04, §14)
   NEXT_PUBLIC_ESA_TILL_NUMBER: z.string().default("000000"),
   NEXT_PUBLIC_ESA_TILL_NAME: z.string().default("ESA Kenyatta University"),
-  NEXT_PUBLIC_ESA_BADGE_FEE: z.string().default("200"),
+  NEXT_PUBLIC_ESA_BADGE_FEE: z.string().default("300"),
 
   // Sign-up gate (spec §14) — leave unset in dev to accept any address.
   ALLOWED_STUDENT_EMAIL_DOMAIN: z.preprocess(emptyToUndefined, z.string().optional()),

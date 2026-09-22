@@ -32,7 +32,7 @@ export function BadgeSection({
   regNo,
   tillNumber,
   tillName,
-  badgeFee = "200",
+  badgeFee = "300",
   legacyCardImageUrl,
 }: {
   fullName: string;

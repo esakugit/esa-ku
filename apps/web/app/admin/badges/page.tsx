@@ -28,7 +28,7 @@ export default async function AdminBadgesPage() {
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-neutral-600">
             Cross-check student M-Pesa transaction reference codes against the official till statement
-            for {env.NEXT_PUBLIC_ESA_TILL_NAME} (Till: {env.NEXT_PUBLIC_ESA_TILL_NUMBER}) before authorizing.
+            for {env.NEXT_PUBLIC_ESA_TILL_NAME} (Till: {env.NEXT_PUBLIC_ESA_TILL_NUMBER} · Fee: KES {env.NEXT_PUBLIC_ESA_BADGE_FEE}) before authorizing.
           </p>
         </header>
 
