@@ -247,6 +247,27 @@ export default async function HomePage() {
                       </div>
                     </div>
 
+                    {/* Official Inquiries & Contacts */}
+                    <div className="rounded-xl border border-neutral-100 bg-neutral-50/80 p-3 text-xs space-y-1.5">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Inquiries &amp; Table Reservations</p>
+                      <div className="flex flex-wrap items-center gap-y-1.5 gap-x-3 font-semibold text-neutral-700">
+                        <a href="tel:+254113790205" className="inline-flex items-center gap-1.5 hover:text-accent transition-colors">
+                          <span className="text-accent">📞</span>
+                          <span>+254 113 790 205</span>
+                        </a>
+                        <span className="hidden sm:inline text-neutral-300">·</span>
+                        <a href="tel:+254700850287" className="inline-flex items-center gap-1.5 hover:text-accent transition-colors">
+                          <span className="text-accent">📞</span>
+                          <span>+254 700 850 287</span>
+                        </a>
+                        <span className="hidden sm:inline text-neutral-300">·</span>
+                        <a href="mailto:esa.kenyattauniv@gmail.com" className="inline-flex items-center gap-1.5 hover:text-accent transition-colors">
+                          <span className="text-accent">✉️</span>
+                          <span>esa.kenyattauniv@gmail.com</span>
+                        </a>
+                      </div>
+                    </div>
+
                     {/* Description preview */}
                     {featuredEvent.description && (
                       <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed line-clamp-3 pt-1">
