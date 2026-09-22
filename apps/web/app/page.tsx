@@ -6,6 +6,8 @@ import { InstitutionalHeader } from "@/components/InstitutionalHeader";
 import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 import { BottomNav } from "@/components/BottomNav";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const user = await getCurrentUser().catch(() => null);
 

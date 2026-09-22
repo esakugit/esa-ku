@@ -7,6 +7,8 @@ import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 import { BottomNav } from "@/components/BottomNav";
 import { EventsFeedView } from "@/components/EventsFeedView";
 
+export const dynamic = "force-dynamic";
+
 export default async function EventsPage() {
   const user = await getCurrentUser().catch(() => null);
 

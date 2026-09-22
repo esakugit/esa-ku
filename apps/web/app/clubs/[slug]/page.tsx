@@ -9,6 +9,8 @@ import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 import { ClubEventManager } from "@/components/ClubEventManager";
 import { FollowClubButton } from "@/components/FollowClubButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function ClubDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const club = await db.query.clubs.findFirst({ where: (c, { eq }) => eq(c.slug, slug) });

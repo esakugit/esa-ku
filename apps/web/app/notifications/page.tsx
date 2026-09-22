@@ -10,6 +10,8 @@ import { NotificationList } from "@/components/NotificationList";
 import { db, announcements } from "@esa/db";
 import { desc } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 export default async function NotificationsPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");

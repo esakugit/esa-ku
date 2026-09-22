@@ -6,6 +6,8 @@ import { BottomNav } from "@/components/BottomNav";
 import { InstitutionalHeader } from "@/components/InstitutionalHeader";
 import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 
+export const dynamic = "force-dynamic";
+
 export default async function ClubsPage() {
   const user = await getCurrentUser();
   const clubs = await db.query.clubs.findMany({ orderBy: (c, { asc }) => asc(c.name) });
@@ -20,8 +22,7 @@ export default async function ClubsPage() {
             Technical Chapters & Engineering Clubs
           </h1>
           <p className="mt-2 text-xs sm:text-sm text-neutral-600 leading-relaxed">
-            Discover student chapters affiliated with global professional institutions (IEEE, SAE, IEK)
-            and specialized technical societies across Kenyatta University.
+            Discover student chapters and technical societies across Kenyatta University engineering disciplines.
           </p>
         </header>
 
