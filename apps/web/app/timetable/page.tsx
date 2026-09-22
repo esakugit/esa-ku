@@ -9,6 +9,8 @@ import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 import { isEsaAdmin } from "@/lib/roles";
 import { TimetableView } from "@/components/TimetableView";
 
+export const dynamic = "force-dynamic";
+
 export default async function TimetablePage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");

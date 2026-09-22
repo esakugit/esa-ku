@@ -18,15 +18,6 @@ export async function GET(req: Request) {
   const cohortId = Number(searchParams.get("cohortId"));
   if (!cohortId) return NextResponse.json({ error: "cohortId required" }, { status: 400 });
 
-  const isAdmin = isEsaAdmin(user);
-  const isOwnCohort = user.cohortId === cohortId;
-  if (!isAdmin && !isOwnCohort && !user.hasActiveBadge) {
-    return NextResponse.json(
-      { error: "An active Badge is required to view another cohort's timetable." },
-      { status: 403 },
-    );
-  }
-
   const rows = await db.query.timetableEntries.findMany({
     where: eq(timetableEntries.cohortId, cohortId),
     with: { course: true },

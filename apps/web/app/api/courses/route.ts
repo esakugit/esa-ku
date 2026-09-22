@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db, courses } from "@esa/db";
 import { eq } from "drizzle-orm";
-import { requireApiEsaAdmin, isResponse } from "@/lib/api";
 
 /** Public — resource/timetable filters need this without auth. */
 export async function GET(req: Request) {
@@ -20,9 +19,19 @@ const createSchema = z.object({
   name: z.string().min(2).max(160),
 });
 
+import { requireApiUser, isResponse } from "@/lib/api";
+import { isEsaAdmin } from "@/lib/roles";
+
 export async function POST(req: Request) {
-  const admin = await requireApiEsaAdmin();
-  if (isResponse(admin)) return admin;
+  const user = await requireApiUser();
+  if (isResponse(user)) return user;
+
+  if (!isEsaAdmin(user) && user.role !== "class_rep") {
+    return NextResponse.json(
+      { error: "Only admins and class representatives can register course units." },
+      { status: 403 }
+    );
+  }
 
   const parsed = createSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
