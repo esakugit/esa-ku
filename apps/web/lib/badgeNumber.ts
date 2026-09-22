@@ -1,23 +1,44 @@
-import { db, badges, legacyMembers } from "@esa/db";
-import { eq } from "drizzle-orm";
+import { db } from "@esa/db";
 
 /**
- * ESA Badge numbers are "ESA-" + 4 random digits (0000–9999), matching the
- * numbering already printed on existing physical/Canva membership cards —
- * those aren't sequential, so we can't just increment a counter. Instead we
- * draw a random 4-digit code and retry on collision against both the live
- * `badges` table and the `legacy_members` roster of already-issued numbers.
+ * Sequential ESA Member Numbering Convention:
+ * - Member #0: Dalton Omondi (ESA-0000, Platform Developer)
+ * - Member #1: ESA-KU (ESA-0001, Society Executive Account)
+ * - Member #2+: Monotonically assigned sequential numbers (ESA-0002, ESA-0003, ESA-0004...)
+ *
+ * Guarantees zero collisions against both active platform badges and the legacy physical roster.
  */
 export async function generateUniqueBadgeNumber(): Promise<string> {
-  for (let attempt = 0; attempt < 50; attempt++) {
-    const n = Math.floor(Math.random() * 10000);
-    const candidate = `ESA-${String(n).padStart(4, "0")}`;
+  const [activeBadges, legacyRoster] = await Promise.all([
+    db.query.badges.findMany({ columns: { badgeNumber: true } }),
+    db.query.legacyMembers.findMany({ columns: { badgeNumber: true } }),
+  ]);
 
-    const [takenLive, takenLegacy] = await Promise.all([
-      db.query.badges.findFirst({ where: eq(badges.badgeNumber, candidate) }),
-      db.query.legacyMembers.findFirst({ where: eq(legacyMembers.badgeNumber, candidate) }),
-    ]);
-    if (!takenLive && !takenLegacy) return candidate;
+  const takenNumbers = new Set<string>();
+  for (const b of activeBadges) {
+    if (b.badgeNumber) takenNumbers.add(b.badgeNumber.trim().toUpperCase());
   }
-  throw new Error("Could not generate a unique badge number — the ESA-#### space may be nearly exhausted.");
+  for (const l of legacyRoster) {
+    if (l.badgeNumber) takenNumbers.add(l.badgeNumber.trim().toUpperCase());
+  }
+
+  // Sequentially find the next available number starting from 2
+  let seq = 2;
+  while (seq <= 9999) {
+    const candidate = `ESA-${String(seq).padStart(4, "0")}`;
+    if (!takenNumbers.has(candidate)) {
+      return candidate;
+    }
+    seq++;
+  }
+
+  // Safe fallback if 4-digit space exceeds 9999
+  let ext = 10000;
+  while (true) {
+    const candidate = `ESA-${ext}`;
+    if (!takenNumbers.has(candidate)) {
+      return candidate;
+    }
+    ext++;
+  }
 }
