@@ -122,8 +122,10 @@ export function InstitutionalHeader({ user, showAdmin = false }: InstitutionalHe
                 {user.hasActiveBadge ? (
                   <Link
                     href="/profile"
-                    className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-brandgreen/30 bg-brandgreen-soft px-2.5 py-1 text-xs font-semibold text-brandgreen hover:bg-brandgreen/15 transition-colors"
-                    title="Active Member Badge"
+                    className={`inline-flex items-center gap-1.5 rounded-md border border-brandgreen/30 bg-brandgreen-soft px-2.5 py-1.5 text-xs font-semibold text-brandgreen hover:bg-brandgreen/20 transition-colors ${
+                      isActive(pathname, "/profile") ? "ring-2 ring-brandgreen ring-offset-1" : ""
+                    }`}
+                    title={`${user.fullName} · Member #${user.badgeNumber || ""} · View Profile`}
                   >
                     <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                       <path
@@ -137,21 +139,18 @@ export function InstitutionalHeader({ user, showAdmin = false }: InstitutionalHe
                 ) : (
                   <Link
                     href="/profile"
-                    className="hidden sm:inline-flex items-center gap-1 rounded-md border border-flag/30 bg-flag-soft px-2.5 py-1 text-xs font-semibold text-flag hover:bg-flag-muted/30 transition-colors"
+                    className={`inline-flex items-center gap-2 rounded-md border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-50 transition-colors ${
+                      isActive(pathname, "/profile") ? "border-accent bg-accent-soft text-accent" : ""
+                    }`}
+                    title={`${user.fullName} · View Profile`}
                   >
-                    <span>Get Badge</span>
+                    <span className="h-2 w-2 rounded-full bg-accent"></span>
+                    <span className="max-w-[110px] truncate">{user.fullName.split(" ")[0]}</span>
+                    <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800">
+                      Get Badge
+                    </span>
                   </Link>
                 )}
-
-                <Link
-                  href="/profile"
-                  className={`flex items-center gap-2 rounded-md border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-50 transition-colors ${
-                    isActive(pathname, "/profile") ? "border-accent bg-accent-soft text-accent" : ""
-                  }`}
-                >
-                  <span className="h-2 w-2 rounded-full bg-accent"></span>
-                  <span className="max-w-[110px] truncate">{user.fullName.split(" ")[0]}</span>
-                </Link>
               </>
             ) : (
               <div className="flex items-center gap-2">
