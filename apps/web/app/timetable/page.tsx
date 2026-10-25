@@ -21,20 +21,24 @@ export default async function TimetablePage() {
   let targetCohortId = user.cohortId;
   let ownCohort = null;
 
-  if (targetCohortId) {
-    ownCohort = await db.query.cohorts.findFirst({
-      where: eq(cohorts.id, targetCohortId),
-      with: { department: true },
-    });
-  }
+  try {
+    if (targetCohortId) {
+      ownCohort = await db.query.cohorts.findFirst({
+        where: eq(cohorts.id, targetCohortId),
+        with: { department: true },
+      });
+    }
 
-  // If no cohort found (admin or student without profile completed), pick the first available cohort
-  if (!ownCohort) {
-    ownCohort = await db.query.cohorts.findFirst({
-      with: { department: true },
-      orderBy: (c, { asc }) => asc(c.id),
-    });
-    targetCohortId = ownCohort?.id ?? null;
+    // If no cohort found (admin or student without profile completed), pick the first available cohort
+    if (!ownCohort) {
+      ownCohort = await db.query.cohorts.findFirst({
+        with: { department: true },
+        orderBy: (c, { asc }) => asc(c.id),
+      });
+      targetCohortId = ownCohort?.id ?? null;
+    }
+  } catch (err) {
+    console.error("[TimetablePage] DB query error:", err);
   }
 
   const canEdit =

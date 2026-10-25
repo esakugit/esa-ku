@@ -10,7 +10,12 @@ export const dynamic = "force-dynamic";
 
 export default async function ClubsPage() {
   const user = await getCurrentUser();
-  const clubs = await db.query.clubs.findMany({ orderBy: (c, { asc }) => asc(c.name) });
+  let clubs: any[] = [];
+  try {
+    clubs = await db.query.clubs.findMany({ orderBy: (c, { asc }) => asc(c.name) });
+  } catch (err) {
+    console.error("[ClubsPage] DB error:", err);
+  }
 
   return (
     <div className="min-h-screen bg-surface flex flex-col font-sans text-ink">

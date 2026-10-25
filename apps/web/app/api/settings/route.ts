@@ -4,59 +4,74 @@ import { db, platformSettings } from "@esa/db";
 import { eq } from "drizzle-orm";
 import { requireApiEsaAdmin, isResponse } from "@/lib/api";
 
-const DEFAULT_HERO = {
-  heroTitle: "Advancing Engineering Excellence, Innovation & Technical Leadership",
-  heroSubtitle:
-    "The official academic and professional society representing Kenyatta University engineering students across Civil, Electrical, Mechanical, Agricultural, and Aerospace disciplines.",
-  heroEyebrow: "Kenyatta University · School of Engineering & Architecture",
-  heroImageUrl: "/hero-event.svg",
-  heroBadgeText: "Official ESA Student Society",
-  announcementNotice: "",
-};
+import {
+  DEFAULT_HERO,
+  DEFAULT_FOOTER,
+  DEFAULT_GOVERNANCE,
+  DEFAULT_GALLERY,
+} from "@/lib/settings-defaults";
 
-export async function GET() {
-  const row = await db.query.platformSettings.findFirst({
-    where: eq(platformSettings.key, "hero"),
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const key = searchParams.get("key");
+
+  // Fetch all platform settings rows
+  const rows = await db.query.platformSettings.findMany();
+  const settingsMap: Record<string, any> = {};
+  for (const r of rows) {
+    try {
+      settingsMap[r.key] = JSON.parse(r.value);
+    } catch {
+      settingsMap[r.key] = r.value;
+    }
+  }
+
+  const hero = { ...DEFAULT_HERO, ...(settingsMap["hero"] || {}) };
+  const footer = { ...DEFAULT_FOOTER, ...(settingsMap["footer"] || {}) };
+  const governance = { ...DEFAULT_GOVERNANCE, ...(settingsMap["governance"] || {}) };
+  const gallery = Array.isArray(settingsMap["gallery"]) ? settingsMap["gallery"] : DEFAULT_GALLERY;
+
+  if (key === "hero") return NextResponse.json(hero);
+  if (key === "footer") return NextResponse.json(footer);
+  if (key === "governance") return NextResponse.json(governance);
+  if (key === "gallery") return NextResponse.json(gallery);
+
+  // Return full dictionary
+  return NextResponse.json({
+    hero,
+    footer,
+    governance,
+    gallery,
+    // Legacy top-level hero properties for backward compatibility
+    ...hero,
   });
-
-  if (!row) {
-    return NextResponse.json(DEFAULT_HERO);
-  }
-
-  try {
-    const parsed = JSON.parse(row.value);
-    return NextResponse.json({ ...DEFAULT_HERO, ...parsed });
-  } catch {
-    return NextResponse.json(DEFAULT_HERO);
-  }
 }
-
-const updateSchema = z.object({
-  heroTitle: z.string().min(2).max(500),
-  heroSubtitle: z.string().min(2).max(2000),
-  heroEyebrow: z.string().min(2).max(200),
-  heroImageUrl: z.string().min(1).max(2000),
-  heroBadgeText: z.string().max(200).optional(),
-  announcementNotice: z.string().max(2000).optional(),
-});
 
 export async function POST(req: Request) {
   const admin = await requireApiEsaAdmin();
   if (isResponse(admin)) return admin;
 
   const body = await req.json().catch(() => null);
-  const parsed = updateSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.flatten() },
-      { status: 400 },
-    );
+  if (!body) return NextResponse.json({ error: "Invalid JSON input" }, { status: 400 });
+
+  let targetKey = "hero";
+  let targetValue: any = null;
+
+  if (body.key && body.value !== undefined) {
+    targetKey = String(body.key);
+    targetValue = body.value;
+  } else if (body.heroTitle) {
+    targetKey = "hero";
+    targetValue = body;
+  } else {
+    return NextResponse.json({ error: "Missing setting key or value" }, { status: 400 });
   }
 
-  const valueStr = JSON.stringify(parsed.data);
+  const valueStr = typeof targetValue === "string" ? targetValue : JSON.stringify(targetValue);
 
   const existing = await db.query.platformSettings.findFirst({
-    where: eq(platformSettings.key, "hero"),
+    where: eq(platformSettings.key, targetKey),
   });
 
   if (existing) {
@@ -67,15 +82,15 @@ export async function POST(req: Request) {
         updatedBy: admin.id,
         updatedAt: new Date(),
       })
-      .where(eq(platformSettings.key, "hero"));
+      .where(eq(platformSettings.key, targetKey));
   } else {
     await db.insert(platformSettings).values({
-      key: "hero",
+      key: targetKey,
       value: valueStr,
       updatedBy: admin.id,
       updatedAt: new Date(),
     });
   }
 
-  return NextResponse.json({ ok: true, settings: parsed.data });
+  return NextResponse.json({ ok: true, key: targetKey, settings: targetValue });
 }

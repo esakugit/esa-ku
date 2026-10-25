@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDraft } from "@/lib/useDraft";
 import { useToast } from "@/components/Toast";
 import { SiteHeroTab } from "./SiteHeroTab";
@@ -106,6 +106,8 @@ type OverviewCounts = {
   pendingBadges: number;
   pendingResources: number;
   unlinkedRoster: number;
+  totalMembers: number;
+  leadershipCount: number;
 };
 
 function OverviewTab({ onNavigate }: { onNavigate: (t: Tab) => void }) {
@@ -113,34 +115,41 @@ function OverviewTab({ onNavigate }: { onNavigate: (t: Tab) => void }) {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/departments").then((r) => r.json()),
-      fetch("/api/courses").then((r) => r.json()),
-      fetch("/api/clubs").then((r) => r.json()),
-      fetch("/api/badges").then((r) => r.json()),
-      fetch("/api/resources/pending").then((r) => r.json()),
-      fetch("/api/legacy-members?unmatched=true").then((r) => r.json()),
-    ]).then(([departments, courses, clubs, badges, resources, roster]) => {
+      fetch("/api/departments").then((r) => r.json()).catch(() => []),
+      fetch("/api/courses").then((r) => r.json()).catch(() => []),
+      fetch("/api/clubs").then((r) => r.json()).catch(() => []),
+      fetch("/api/badges").then((r) => r.json()).catch(() => []),
+      fetch("/api/resources/pending").then((r) => r.json()).catch(() => []),
+      fetch("/api/legacy-members?unmatched=true").then((r) => r.json()).catch(() => []),
+      fetch("/api/users").then((r) => r.json()).catch(() => ({ users: [], stats: {} })),
+    ]).then(([departments, courses, clubs, badges, resources, roster, usersData]) => {
+      const allUsers = Array.isArray(usersData?.users) ? usersData.users : [];
+      const leaders = allUsers.filter((u: any) => u.role && u.role !== "student").length;
       setCounts({
-        departments: departments.length,
-        courses: courses.length,
-        clubs: clubs.length,
-        pendingBadges: badges.length,
-        pendingResources: resources.length,
-        unlinkedRoster: roster.length,
+        departments: departments.length || 0,
+        courses: courses.length || 0,
+        clubs: clubs.length || 0,
+        pendingBadges: badges.length || 0,
+        pendingResources: resources.length || 0,
+        unlinkedRoster: roster.length || 0,
+        totalMembers: allUsers.length || 0,
+        leadershipCount: leaders,
       });
     });
   }, []);
 
   const needsAttention = [
-    { label: "Pending Badge applications", value: counts?.pendingBadges, tab: "Roles" as Tab, href: "/admin/badges" },
-    { label: "Uploads awaiting moderation", value: counts?.pendingResources, tab: "Roles" as Tab, href: "/admin/resources" },
-    { label: "Unlinked roster entries", value: counts?.unlinkedRoster, tab: "Roster" as Tab },
+    { label: "Pending Badge applications", value: counts?.pendingBadges, href: "/admin/badges" },
+    { label: "Uploads awaiting moderation", value: counts?.pendingResources, href: "/admin/resources" },
+    { label: "Unlinked roster entries", value: counts?.unlinkedRoster, tab: "Roster" as Tab, onClick: () => onNavigate("Roster") },
   ];
 
   const catalog = [
-    { label: "Departments", value: counts?.departments, tab: "Departments" as Tab },
-    { label: "Courses", value: counts?.courses, tab: "Courses" as Tab },
-    { label: "Clubs", value: counts?.clubs, tab: "Clubs" as Tab },
+    { label: "Registered Platform Users", value: counts?.totalMembers, tab: "Members" as Tab, onClick: () => onNavigate("Members") },
+    { label: "Leadership & Rep Roles", value: counts?.leadershipCount, tab: "Roles" as Tab, onClick: () => onNavigate("Roles") },
+    { label: "Departments", value: counts?.departments, tab: "Departments" as Tab, onClick: () => onNavigate("Departments") },
+    { label: "Courses", value: counts?.courses, tab: "Courses" as Tab, onClick: () => onNavigate("Courses") },
+    { label: "Clubs & Chapters", value: counts?.clubs, tab: "Clubs" as Tab, onClick: () => onNavigate("Clubs") },
   ];
 
   return (
@@ -154,10 +163,10 @@ function OverviewTab({ onNavigate }: { onNavigate: (t: Tab) => void }) {
         </div>
       </div>
       <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">Catalog</p>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">Platform Catalog & Community</p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {catalog.map((s) => (
-            <StatCard key={s.label} {...s} onClick={() => onNavigate(s.tab)} />
+            <StatCard key={s.label} {...s} onClick={s.onClick} />
           ))}
         </div>
       </div>
@@ -762,73 +771,453 @@ function ClubsTab() {
 // Roles
 // ---------------------------------------------------------------------------
 
+type RoleUser = {
+  id: number;
+  fullName: string;
+  email: string;
+  regNo: string | null;
+  role: string;
+  department: { id: number; name: string; code: string } | null;
+  cohort: { id: number; label: string; entryYear: number } | null;
+  badge: {
+    badgeNumber: string | null;
+    status: string;
+  } | null;
+};
+
 function RolesTab() {
-  const [q, setQ] = useState("");
-  const [results, setResults] = useState<
-    { id: number; fullName: string; email: string; role: string }[]
-  >([]);
-  const [status, setStatus] = useState<string | null>(null);
+  const [users, setUsers] = useState<RoleUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [cohorts, setCohorts] = useState<{ id: number; label: string }[]>([]);
+  const [clubs, setClubs] = useState<{ id: number; name: string }[]>([]);
+  
+  // Role assignment modal
+  const [selectedUser, setSelectedUser] = useState<RoleUser | null>(null);
+  const [targetRole, setTargetRole] = useState<string>("student");
+  const [targetCohortId, setTargetCohortId] = useState<number | undefined>(undefined);
+  const [targetClubId, setTargetClubId] = useState<number | undefined>(undefined);
+  const [saving, setSaving] = useState(false);
+
   const { success, error: toastError } = useToast();
 
-  async function search(query: string) {
-    setQ(query);
-    if (query.trim().length < 2) return setResults([]);
-    const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`);
-    setResults(await res.json());
+  function loadData() {
+    setLoading(true);
+    fetch("/api/users")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data?.users)) {
+          setUsers(data.users);
+        }
+      })
+      .catch((err) => toastError("Could not load users", err.message))
+      .finally(() => setLoading(false));
+
+    fetch("/api/cohorts")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setCohorts(data);
+          if (data.length > 0) setTargetCohortId(data[0].id);
+        }
+      })
+      .catch(() => {});
+
+    fetch("/api/clubs")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setClubs(data);
+          if (data.length > 0) setTargetClubId(data[0].id);
+        }
+      })
+      .catch(() => {});
   }
 
-  async function setRole(userId: number, role: string) {
-    setStatus(null);
-    const res = await fetch(`/api/users/${userId}/role`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      setStatus(data.error ?? "Failed to update role.");
-      toastError("Couldn't update role", data.error);
-      return;
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // Compute breakdown counts
+  const counts = useMemo(() => {
+    let superAdmin = 0;
+    let esaAdmin = 0;
+    let classRep = 0;
+    let clubAdmin = 0;
+    let student = 0;
+
+    for (const u of users) {
+      if (u.role === "super_admin") superAdmin++;
+      else if (u.role === "esa_admin") esaAdmin++;
+      else if (u.role === "class_rep") classRep++;
+      else if (u.role === "club_admin") clubAdmin++;
+      else student++;
     }
-    setStatus("Role updated.");
-    success("Role updated");
-    search(q);
+
+    return {
+      superAdmin,
+      esaAdmin,
+      classRep,
+      clubAdmin,
+      student,
+      totalLeadership: superAdmin + esaAdmin + classRep + clubAdmin,
+      total: users.length,
+    };
+  }, [users]);
+
+  // Filtered users
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      // Role filter
+      if (roleFilter === "leadership") {
+        if (u.role === "student") return false;
+      } else if (roleFilter !== "all" && u.role !== roleFilter) {
+        return false;
+      }
+
+      // Search query filter
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        const matchName = u.fullName.toLowerCase().includes(q);
+        const matchEmail = u.email.toLowerCase().includes(q);
+        const matchReg = u.regNo?.toLowerCase().includes(q) ?? false;
+        const matchDept = u.department?.name.toLowerCase().includes(q) ?? false;
+        const matchCohort = u.cohort?.label.toLowerCase().includes(q) ?? false;
+        return matchName || matchEmail || matchReg || matchDept || matchCohort;
+      }
+
+      return true;
+    });
+  }, [users, roleFilter, search]);
+
+  async function handleSaveRole(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedUser) return;
+    setSaving(true);
+
+    try {
+      const res = await fetch(`/api/users/${selectedUser.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_role",
+          role: targetRole,
+          cohortId: targetRole === "class_rep" ? targetCohortId : undefined,
+          clubId: targetRole === "club_admin" ? targetClubId : undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update role");
+
+      success("Role updated", `${selectedUser.fullName} is now ${targetRole.replace("_", " ")}.`);
+      setSelectedUser(null);
+      loadData();
+    } catch (err: any) {
+      toastError("Role update failed", err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function getRoleBadge(role: string) {
+    switch (role) {
+      case "super_admin":
+        return <span className="inline-flex items-center gap-1 rounded-md bg-purple-100 text-purple-800 px-2 py-0.5 text-xs font-bold border border-purple-200">👑 Super Admin</span>;
+      case "esa_admin":
+        return <span className="inline-flex items-center gap-1 rounded-md bg-blue-100 text-blue-800 px-2 py-0.5 text-xs font-bold border border-blue-200">🛡️ ESA Admin</span>;
+      case "class_rep":
+        return <span className="inline-flex items-center gap-1 rounded-md bg-emerald-100 text-emerald-800 px-2 py-0.5 text-xs font-bold border border-emerald-200">🎓 Class Rep</span>;
+      case "club_admin":
+        return <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 text-amber-800 px-2 py-0.5 text-xs font-bold border border-amber-200">🧩 Club Admin</span>;
+      default:
+        return <span className="inline-flex items-center gap-1 rounded-md bg-neutral-100 text-neutral-600 px-2 py-0.5 text-xs font-medium border border-neutral-200">Student</span>;
+    }
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <label className="field-label">Find a student by email</label>
-        <input className="field-input" value={q} onChange={(e) => search(e.target.value)} placeholder="name@students.ku.ac.ke" />
+    <div className="space-y-6">
+      {/* 1. Leadership Roles Overview Cards */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        <div className="rounded-xl border border-purple-200 bg-purple-50/50 p-4 shadow-xs">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-purple-700">Super Admins</p>
+          <p className="mt-1 text-2xl font-black text-purple-900">{counts.superAdmin}</p>
+        </div>
+        <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-4 shadow-xs">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-blue-700">ESA ExCom Admins</p>
+          <p className="mt-1 text-2xl font-black text-blue-900">{counts.esaAdmin}</p>
+        </div>
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 shadow-xs">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Class Reps</p>
+          <p className="mt-1 text-2xl font-black text-emerald-900">{counts.classRep}</p>
+        </div>
+        <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 shadow-xs">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700">Club Leaders</p>
+          <p className="mt-1 text-2xl font-black text-amber-900">{counts.clubAdmin}</p>
+        </div>
+        <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-xs">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">Total Users</p>
+          <p className="mt-1 text-2xl font-black text-neutral-800">{counts.total}</p>
+        </div>
       </div>
-      {status && <p className="text-sm text-accent">{status}</p>}
-      <ul className="space-y-2">
-        {results.map((u) => (
-          <li key={u.id} className="card flex flex-wrap items-center justify-between gap-3 p-4">
-            <div>
-              <p className="text-sm font-semibold text-ink">{u.fullName}</p>
-              <p className="text-xs text-neutral-500">
-                {u.email} · current role: <span className="font-medium">{u.role}</span>
-              </p>
+
+      {/* 2. Search & Role Filter Tabs */}
+      <div className="card p-4 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="relative flex-1 max-w-md">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-400 pointer-events-none text-xs">🔍</span>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search users by name, email, reg no, department..."
+              className="field-input w-full pl-9 text-xs"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-400 hover:text-neutral-600 text-xs font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={loadData}
+            disabled={loading}
+            className="text-xs font-semibold text-accent hover:underline cursor-pointer disabled:opacity-50"
+          >
+            ↻ Refresh Directory
+          </button>
+        </div>
+
+        {/* Filter Pills */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-neutral-100">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mr-1">Filter:</span>
+          {[
+            { id: "all", label: `All Users (${counts.total})` },
+            { id: "leadership", label: `👑 Leadership (${counts.totalLeadership})` },
+            { id: "esa_admin", label: `ESA Admins (${counts.esaAdmin})` },
+            { id: "class_rep", label: `Class Reps (${counts.classRep})` },
+            { id: "club_admin", label: `Club Admins (${counts.clubAdmin})` },
+            { id: "student", label: `Students (${counts.student})` },
+          ].map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => setRoleFilter(f.id)}
+              className={`rounded-full px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
+                roleFilter === f.id
+                  ? "bg-neutral-900 text-white shadow-xs"
+                  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. Platform Users & Roles Table */}
+      <div className="card overflow-hidden">
+        <div className="border-b border-neutral-100 bg-neutral-50 px-4 py-3 sm:px-6 flex items-center justify-between">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-700">
+            Platform Users & Roles Directory ({filteredUsers.length})
+          </h3>
+          <span className="text-[11px] text-neutral-500">
+            Elevated privileges activate only when user holds an active badge
+          </span>
+        </div>
+
+        {loading ? (
+          <div className="p-8 text-center text-sm text-neutral-500">Loading platform users...</div>
+        ) : filteredUsers.length === 0 ? (
+          <div className="p-8 text-center text-sm text-neutral-500">
+            No users match the search filter.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-neutral-100 bg-neutral-50/50 text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                <tr>
+                  <th className="px-4 py-3">Member / User</th>
+                  <th className="px-4 py-3">Academic Department & Cohort</th>
+                  <th className="px-4 py-3">Assigned Role</th>
+                  <th className="px-4 py-3">Badge Status</th>
+                  <th className="px-4 py-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100">
+                {filteredUsers.map((u) => (
+                  <tr key={u.id} className="hover:bg-neutral-50/60 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft font-bold text-accent text-xs">
+                          {u.fullName.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate font-bold text-ink text-xs sm:text-sm">{u.fullName}</p>
+                          <p className="truncate text-xs text-neutral-500">{u.email}</p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <p className="text-xs font-semibold text-ink">
+                        {u.department ? `${u.department.name} (${u.department.code})` : <span className="text-neutral-400 italic">No department set</span>}
+                      </p>
+                      {u.cohort && (
+                        <p className="text-[11px] text-neutral-500">Cohort: {u.cohort.label}</p>
+                      )}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      {getRoleBadge(u.role)}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      {u.badge?.status === "active" ? (
+                        <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 border border-emerald-200">
+                          ✓ {u.badge.badgeNumber || "Active Badge"}
+                        </span>
+                      ) : (
+                        <span className="text-[11px] text-neutral-400 italic">
+                          No active badge
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="px-4 py-3 text-right">
+                      {u.role === "super_admin" ? (
+                        <span className="text-xs text-neutral-400 font-semibold italic">Protected</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setTargetRole(u.role);
+                            if (u.cohort?.id) setTargetCohortId(u.cohort.id);
+                          }}
+                          className="rounded-lg border border-neutral-300 bg-white hover:bg-neutral-50 px-2.5 py-1 text-xs font-semibold text-ink shadow-2xs cursor-pointer transition-colors"
+                        >
+                          Change Role
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* 4. Edit Role Modal */}
+      {selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-2xs">
+          <div className="card w-full max-w-md p-6 bg-white shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+              <div>
+                <h3 className="text-base font-bold text-ink">Assign Role</h3>
+                <p className="text-xs text-neutral-500">{selectedUser.fullName} ({selectedUser.email})</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedUser(null)}
+                className="text-neutral-400 hover:text-neutral-600 font-bold cursor-pointer"
+              >
+                ✕
+              </button>
             </div>
-            <div className="flex gap-2">
-              {["student", "class_rep", "club_admin", "esa_admin"].map((r) => (
-                <button
-                  key={r}
-                  onClick={() => setRole(u.id, r)}
-                  disabled={u.role === r}
-                  className="btn-secondary px-2 py-1 text-xs disabled:opacity-40"
+
+            <form onSubmit={handleSaveRole} className="space-y-4">
+              <div>
+                <label className="field-label">Select Platform Role</label>
+                <select
+                  className="field-input font-semibold"
+                  value={targetRole}
+                  onChange={(e) => setTargetRole(e.target.value)}
                 >
-                  {r.replace("_", " ")}
+                  <option value="student">Student (Standard Access)</option>
+                  <option value="class_rep">Class Representative (Cohort Timetable Management)</option>
+                  <option value="club_admin">Club Admin (Technical Chapter Management)</option>
+                  <option value="esa_admin">ESA Admin (Executive Committee)</option>
+                </select>
+              </div>
+
+              {targetRole === "class_rep" && (
+                <div>
+                  <label className="field-label">Cohort to Represent</label>
+                  <select
+                    className="field-input font-semibold"
+                    value={targetCohortId}
+                    onChange={(e) => setTargetCohortId(Number(e.target.value))}
+                    required
+                  >
+                    {cohorts.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[11px] text-neutral-400 mt-1">
+                    Class Reps can edit and publish timetables for their assigned cohort.
+                  </p>
+                </div>
+              )}
+
+              {targetRole === "club_admin" && (
+                <div>
+                  <label className="field-label">Technical Chapter / Club</label>
+                  <select
+                    className="field-input font-semibold"
+                    value={targetClubId}
+                    onChange={(e) => setTargetClubId(Number(e.target.value))}
+                    required
+                  >
+                    {clubs.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[11px] text-neutral-400 mt-1">
+                    Club Admins can post announcements and manage events for their chapter.
+                  </p>
+                </div>
+              )}
+
+              <div className="rounded-lg bg-neutral-50 border border-neutral-200 p-3 text-xs text-neutral-600 space-y-1">
+                <p className="font-semibold text-neutral-700">Governance Note:</p>
+                <p>
+                  Elevated capabilities (posting, timetable editing, admin console) require an active ESA Membership Badge. If the student's badge lapses, the role remains inert until renewal.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100">
+                <button
+                  type="button"
+                  onClick={() => setSelectedUser(null)}
+                  className="btn-secondary !text-xs cursor-pointer"
+                >
+                  Cancel
                 </button>
-              ))}
-            </div>
-          </li>
-        ))}
-      </ul>
-      <p className="text-xs text-neutral-400">
-        Elevated roles only take effect once that person holds an active Badge.
-      </p>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="btn-primary !text-xs cursor-pointer"
+                >
+                  {saving ? "Saving Role..." : "Confirm Role Update"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
