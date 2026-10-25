@@ -1232,7 +1232,9 @@ type RosterDraft = { fullName: string; badgeNumber: string; regNo: string; notes
 
 function RosterTab() {
   const [rows, setRows] = useState<LegacyMember[]>([]);
-  const [showMatched, setShowMatched] = useState(false);
+  const [filterMode, setFilterMode] = useState<"all" | "unlinked" | "linked">("unlinked");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showGuide, setShowGuide] = useState(true);
   const [form, setForm, clearDraft] = useDraft<RosterDraft>("admin-roster-create", {
     fullName: "",
     badgeNumber: "",
@@ -1267,13 +1269,14 @@ function RosterTab() {
     });
     const data = await res.json();
     setLoading(false);
-    if (!res.ok) return setError(data.error ?? "Failed");
+    if (!res.ok) return setError(data.error ?? "Failed to add member");
     clearDraft();
     success("Added to roster", `${data.fullName} · ${data.badgeNumber}`);
     load();
   }
 
   async function remove(id: number) {
+    if (!confirm("Are you sure you want to remove this roster entry?")) return;
     await fetch(`/api/legacy-members/${id}`, { method: "DELETE" });
     info("Roster entry removed");
     load();
@@ -1290,11 +1293,11 @@ function RosterTab() {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      setMatchStatus((m) => ({ ...m, [id]: data.error ?? "Failed to link." }));
-      toastError("Couldn't link", data.error);
+      setMatchStatus((m) => ({ ...m, [id]: data.error ?? "Failed to link account." }));
+      toastError("Couldn't link account", data.error);
       return;
     }
-    success("Linked", "Badge is now active.");
+    success("Account Linked", "Member's badge has been activated with their legacy badge number.");
     load();
   }
 
@@ -1309,131 +1312,373 @@ function RosterTab() {
       toastError("Upload failed", data.error ?? "Please try again.");
       return;
     }
-    success("Card image saved", "It will show on their profile once linked.");
+    success("Card image saved", "Historical card scan will display on their profile once linked.");
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, cardImageUrl: data.cardImageUrl } : r)));
   }
 
-  const visible = rows.filter((r) => showMatched || !r.matchedUserId);
+  // Calculate roster metrics
+  const totalCount = rows.length;
+  const linkedCount = rows.filter((r) => !!r.matchedUserId).length;
+  const unlinkedCount = rows.filter((r) => !r.matchedUserId).length;
+  const withCardsCount = rows.filter((r) => !!r.cardImageUrl).length;
+
+  // Filter and search
+  const filtered = rows.filter((r) => {
+    if (filterMode === "unlinked" && r.matchedUserId) return false;
+    if (filterMode === "linked" && !r.matchedUserId) return false;
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const matchName = r.fullName.toLowerCase().includes(q);
+      const matchBadge = r.badgeNumber.toLowerCase().includes(q);
+      const matchReg = r.regNo?.toLowerCase().includes(q) ?? false;
+      const matchUser = r.matchedUser?.fullName?.toLowerCase().includes(q) || r.matchedUser?.email?.toLowerCase().includes(q);
+      return matchName || matchBadge || matchReg || matchUser;
+    }
+    return true;
+  });
 
   return (
-    <div className="space-y-4">
-      <form onSubmit={create} className="card flex flex-wrap items-end gap-3 p-4">
-        <div className="min-w-[10rem] flex-1">
-          <label className="field-label">Member name (from the card)</label>
-          <input
-            className="field-input"
-            value={form.fullName}
-            onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
-            required
-          />
+    <div className="space-y-6">
+      {/* 1. Explanatory Workflow Guide */}
+      <div className="rounded-2xl border border-accent/20 bg-gradient-to-r from-accent/5 via-neutral-50 to-white p-5 shadow-xs">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent text-white font-bold text-lg shadow-xs">
+              🗂️
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-ink">
+                  Legacy Membership Roster &amp; Card Linking
+                </h3>
+                <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-bold text-accent">
+                  Pre-Platform Members
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-neutral-600 leading-relaxed max-w-2xl">
+                Before this platform was built, ESA issued physical and Canva membership cards. This roster tracks paid members so they <strong>do not have to pay again</strong>. When they register on the site, link their account here to instantly activate their digital badge.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowGuide((v) => !v)}
+            className="text-xs text-accent hover:underline font-semibold shrink-0 cursor-pointer"
+          >
+            {showGuide ? "Hide Guide ▲" : "Show How It Works ▼"}
+          </button>
         </div>
-        <div className="w-32">
-          <label className="field-label">Badge no.</label>
-          <input
-            className="field-input"
-            placeholder="ESA-1330"
-            value={form.badgeNumber}
-            onChange={(e) => setForm((f) => ({ ...f, badgeNumber: e.target.value }))}
-          />
-        </div>
-        <div className="w-40">
-          <label className="field-label">Reg. no. (if known)</label>
-          <input
-            className="field-input"
-            value={form.regNo}
-            onChange={(e) => setForm((f) => ({ ...f, regNo: e.target.value }))}
-          />
-        </div>
-        <button className="btn-primary" disabled={loading}>
-          Add to roster
-        </button>
-        {error && <p className="w-full text-sm text-red-600">{error}</p>}
-        <p className="w-full text-xs text-neutral-400">
-          Leave the badge number blank to have one generated automatically.
-        </p>
-      </form>
 
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
-          {visible.length} {showMatched ? "" : "unlinked "}on roster
-        </p>
-        <button onClick={() => setShowMatched((v) => !v)} className="text-xs text-accent hover:underline">
-          {showMatched ? "Hide linked" : "Show linked too"}
-        </button>
+        {showGuide && (
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-accent/10 pt-4 text-xs">
+            <div className="rounded-xl bg-white p-3 border border-neutral-200/80 space-y-1">
+              <span className="font-bold text-accent">Step 1: Record Card</span>
+              <p className="text-neutral-600 text-[11px] leading-snug">
+                Enter member name and old badge number (e.g. <code>ESA-1042</code>). Optionally upload a photo/scan of their physical card.
+              </p>
+            </div>
+            <div className="rounded-xl bg-white p-3 border border-neutral-200/80 space-y-1">
+              <span className="font-bold text-accent">Step 2: Student Signs Up</span>
+              <p className="text-neutral-600 text-[11px] leading-snug">
+                Student registers their account on this website using their KU email or student credentials.
+              </p>
+            </div>
+            <div className="rounded-xl bg-white p-3 border border-neutral-200/80 space-y-1">
+              <span className="font-bold text-accent">Step 3: Link &amp; Activate</span>
+              <p className="text-neutral-600 text-[11px] leading-snug">
+                Type their email or registration number into the Link box. Their badge is activated immediately with no fee required!
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      <ul className="space-y-2 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
-        {visible.map((r) => (
-          <li key={r.id} className="card-interactive space-y-2 p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-start gap-3">
-                {r.cardImageUrl ? (
-                  <img
-                    src={r.cardImageUrl}
-                    alt=""
-                    className="h-12 w-12 flex-none rounded-md object-cover ring-1 ring-neutral-200"
-                  />
-                ) : (
-                  <div className="flex h-12 w-12 flex-none items-center justify-center rounded-md bg-neutral-100 text-[10px] text-neutral-400 ring-1 ring-neutral-200">
-                    No card
+      {/* 2. Key Metrics Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="card p-3 text-center sm:text-left">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Total On Roster</p>
+          <p className="mt-1 text-2xl font-black text-ink">{totalCount}</p>
+          <p className="text-[11px] text-neutral-500">Historical members recorded</p>
+        </div>
+        <div className="card p-3 text-center sm:text-left border-l-4 border-l-amber-500">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600">Unlinked (Pending)</p>
+          <p className="mt-1 text-2xl font-black text-amber-600">{unlinkedCount}</p>
+          <p className="text-[11px] text-neutral-500">Waiting for student account</p>
+        </div>
+        <div className="card p-3 text-center sm:text-left border-l-4 border-l-emerald-500">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Linked &amp; Active</p>
+          <p className="mt-1 text-2xl font-black text-emerald-600">{linkedCount}</p>
+          <p className="text-[11px] text-neutral-500">Connected to active accounts</p>
+        </div>
+        <div className="card p-3 text-center sm:text-left">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Card Scans Attached</p>
+          <p className="mt-1 text-2xl font-black text-ink">{withCardsCount}</p>
+          <p className="text-[11px] text-neutral-500">Physical card images saved</p>
+        </div>
+      </div>
+
+      {/* 3. Add New Roster Member Form */}
+      <div className="card p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-ink flex items-center gap-1.5">
+            <span>➕</span>
+            <span>Record A Physical / Canva Membership Card</span>
+          </h4>
+          <span className="text-[11px] text-neutral-400">Fields marked * are required</span>
+        </div>
+
+        <form onSubmit={create} className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div className="sm:col-span-2">
+              <label className="field-label">Member Full Name *</label>
+              <input
+                className="field-input"
+                placeholder="e.g. Brian Otieno"
+                value={form.fullName}
+                onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <label className="field-label">Badge Number (Optional)</label>
+              <input
+                className="field-input"
+                placeholder="e.g. ESA-1042"
+                value={form.badgeNumber}
+                onChange={(e) => setForm((f) => ({ ...f, badgeNumber: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="field-label">Reg. Number (if known)</label>
+              <input
+                className="field-input"
+                placeholder="e.g. J17/1234/2023"
+                value={form.regNo}
+                onChange={(e) => setForm((f) => ({ ...f, regNo: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <div className="flex-1 min-w-[14rem]">
+              <input
+                className="field-input text-xs !py-1.5"
+                placeholder="Internal notes (e.g. Paid in 2023 cash register, physical card filed in dept office)"
+                value={form.notes}
+                onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+              />
+            </div>
+            <button className="btn-primary !text-xs !py-1.5 px-4 cursor-pointer" disabled={loading}>
+              {loading ? "Adding..." : "+ Add to Roster"}
+            </button>
+          </div>
+
+          {error && <p className="text-xs text-red-600 font-semibold">{error}</p>}
+          <p className="text-[11px] text-neutral-400">
+            Tip: Leave the badge number blank to automatically assign the next sequential badge number.
+          </p>
+        </form>
+      </div>
+
+      {/* 4. Filter & Search Controls */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 bg-neutral-100 p-1 rounded-xl">
+          <button
+            type="button"
+            onClick={() => setFilterMode("unlinked")}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              filterMode === "unlinked"
+                ? "bg-white text-ink shadow-xs"
+                : "text-neutral-500 hover:text-neutral-800"
+            }`}
+          >
+            Unlinked ({unlinkedCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterMode("linked")}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              filterMode === "linked"
+                ? "bg-white text-ink shadow-xs"
+                : "text-neutral-500 hover:text-neutral-800"
+            }`}
+          >
+            Linked &amp; Active ({linkedCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterMode("all")}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              filterMode === "all"
+                ? "bg-white text-ink shadow-xs"
+                : "text-neutral-500 hover:text-neutral-800"
+            }`}
+          >
+            All Entries ({totalCount})
+          </button>
+        </div>
+
+        <div className="w-full sm:w-72">
+          <input
+            className="field-input !py-1.5 text-xs"
+            placeholder="🔍 Search name, badge, or reg no..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* 5. Roster Entries Grid */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between text-xs text-neutral-500">
+          <span>Showing {filtered.length} of {rows.length} members</span>
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="text-xs text-accent hover:underline cursor-pointer"
+            >
+              Clear Search
+            </button>
+          )}
+        </div>
+
+        <ul className="space-y-3 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
+          {filtered.map((r) => (
+            <li key={r.id} className="card p-4 space-y-3 hover:border-neutral-300 transition-colors">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start gap-3">
+                  {/* Card scan thumbnail */}
+                  <div className="relative group/thumb">
+                    {r.cardImageUrl ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={r.cardImageUrl}
+                        alt="Card"
+                        className="h-14 w-14 flex-none rounded-lg object-cover ring-1 ring-neutral-200 shadow-2xs"
+                      />
+                    ) : (
+                      <div className="flex h-14 w-14 flex-none flex-col items-center justify-center rounded-lg bg-neutral-100 text-[9px] text-neutral-400 ring-1 ring-neutral-200">
+                        <span>💳</span>
+                        <span>No Card</span>
+                      </div>
+                    )}
                   </div>
-                )}
-                <div>
-                  <p className="text-sm font-semibold text-ink">{r.fullName}</p>
-                  <p className="mt-0.5 text-xs text-neutral-500">
-                    {r.badgeNumber}
-                    {r.regNo ? ` · ${r.regNo}` : ""}
-                  </p>
-                  <label className="mt-1 inline-block cursor-pointer text-xs text-accent hover:underline">
-                    {uploadingId === r.id ? "Uploading…" : r.cardImageUrl ? "Replace card image" : "Upload card image"}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      disabled={uploadingId === r.id}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        e.target.value = "";
-                        if (file) uploadCard(r.id, file);
-                      }}
-                    />
-                  </label>
+
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold text-ink">{r.fullName}</p>
+                    </div>
+
+                    <p className="mt-0.5 text-xs font-mono font-semibold text-accent">
+                      {r.badgeNumber}
+                      {r.regNo && <span className="font-sans font-normal text-neutral-500"> · {r.regNo}</span>}
+                    </p>
+
+                    {r.notes && (
+                      <p className="mt-1 text-[11px] text-neutral-500 italic">
+                        "{r.notes}"
+                      </p>
+                    )}
+
+                    <label className="mt-1.5 inline-flex items-center gap-1 cursor-pointer text-[11px] font-semibold text-accent hover:underline">
+                      <span>📸</span>
+                      <span>
+                        {uploadingId === r.id ? "Uploading…" : r.cardImageUrl ? "Replace card scan" : "Upload card scan"}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={uploadingId === r.id}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          e.target.value = "";
+                          if (file) uploadCard(r.id, file);
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-2">
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                      r.matchedUserId
+                        ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                        : "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20"
+                    }`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${r.matchedUserId ? "bg-emerald-600" : "bg-amber-600"}`} />
+                    {r.matchedUserId ? "Linked & Active" : "Unlinked"}
+                  </span>
+
+                  {!r.matchedUserId && (
+                    <button
+                      onClick={() => remove(r.id)}
+                      className="text-xs text-red-600 hover:text-red-700 font-semibold cursor-pointer p-1"
+                      title="Remove from roster"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <span className={r.matchedUserId ? "status-pill-linked" : "status-pill-unlinked"}>
-                  {r.matchedUserId ? "Linked" : "Unlinked"}
-                </span>
-                {!r.matchedUserId && (
-                  <button onClick={() => remove(r.id)} className="text-xs text-red-600 hover:underline">
-                    Remove
-                  </button>
+
+              {/* Linking Status / Action Box */}
+              <div className="rounded-xl bg-neutral-50 p-2.5 border border-neutral-200/80">
+                {r.matchedUserId ? (
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="text-emerald-600 font-bold">✓ Connected:</span>
+                      <span className="font-semibold text-ink">{r.matchedUser?.fullName}</span>
+                      <span className="text-neutral-500 text-[11px]">({r.matchedUser?.email})</span>
+                    </div>
+                    <span className="text-[10px] font-bold uppercase text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md">
+                      Digital Badge Active
+                    </span>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <p className="text-[11px] text-neutral-600">
+                      Link to student account once they register on the site:
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        className="field-input flex-1 !py-1 text-xs"
+                        placeholder="Student's email or reg. number..."
+                        value={matchInputs[r.id] ?? ""}
+                        onChange={(e) => setMatchInputs((m) => ({ ...m, [r.id]: e.target.value }))}
+                      />
+                      <button
+                        onClick={() => match(r.id)}
+                        className="btn-primary !py-1 px-3 text-xs font-semibold cursor-pointer shrink-0"
+                      >
+                        Link Account
+                      </button>
+                    </div>
+                    {matchStatus[r.id] && (
+                      <p className="text-xs text-red-600 font-semibold mt-1">{matchStatus[r.id]}</p>
+                    )}
+                  </div>
                 )}
               </div>
-            </div>
+            </li>
+          ))}
+        </ul>
 
-            {r.matchedUserId ? (
-              <p className="text-xs text-neutral-500">
-                {r.matchedUser?.fullName} ({r.matchedUser?.email})
-              </p>
-            ) : (
-              <div className="flex gap-2">
-                <input
-                  className="field-input flex-1 py-1.5 text-xs"
-                  placeholder="Their email or reg. no."
-                  value={matchInputs[r.id] ?? ""}
-                  onChange={(e) => setMatchInputs((m) => ({ ...m, [r.id]: e.target.value }))}
-                />
-                <button onClick={() => match(r.id)} className="btn-secondary px-3 py-1.5 text-xs">
-                  Link
-                </button>
-              </div>
-            )}
-            {matchStatus[r.id] && <p className="text-xs text-red-600">{matchStatus[r.id]}</p>}
-          </li>
-        ))}
-        {visible.length === 0 && <EmptyRow text="No roster entries yet — add the first membership card above." />}
-      </ul>
+        {filtered.length === 0 && (
+          <EmptyRow
+            text={
+              searchQuery
+                ? `No roster members matching "${searchQuery}".`
+                : filterMode === "linked"
+                ? "No linked roster entries yet."
+                : "No roster entries yet — add the first membership card using the form above."
+            }
+          />
+        )}
+      </div>
     </div>
   );
 }
