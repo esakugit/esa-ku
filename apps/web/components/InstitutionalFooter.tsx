@@ -90,10 +90,10 @@ export async function InstitutionalFooter() {
             </div>
           </div>
 
-          {/* Academic Gateway */}
+          {/* Academic */}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-              Academic Gateway
+              Academic
             </h3>
             <ul className="mt-3 space-y-2 text-xs">
               <li>
@@ -103,75 +103,65 @@ export async function InstitutionalFooter() {
               </li>
               <li>
                 <Link href="/resources?type=notes" className="hover:text-white transition-colors">
-                  Curated Lecture Notes
-                </Link>
-              </li>
-              <li>
-                <Link href="/timetable" className="hover:text-white transition-colors">
-                  Departmental Timetables
-                </Link>
-              </li>
-              <li>
-                <Link href="/events" className="hover:text-white transition-colors">
-                  Engineering Workshops & Summits
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Technical Societies & Chapters */}
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-              Technical Chapters
-            </h3>
-            <ul className="mt-3 space-y-2 text-xs">
-              <li>
-                <Link href="/clubs" className="hover:text-white transition-colors">
-                  Student Chapters Directory
-                </Link>
-              </li>
-              <li>
-                <Link href="/events" className="hover:text-white transition-colors">
-                  Chapter Events & Competitions
+                  Lecture Notes
                 </Link>
               </li>
               <li>
                 <Link href="/resources" className="hover:text-white transition-colors">
-                  Technical Project Archives
+                  Resources
                 </Link>
               </li>
               <li>
-                <Link href="/clubs" className="text-accent hover:underline font-semibold transition-colors">
-                  Explore All Chapters →
+                <Link href="/timetable" className="hover:text-white transition-colors">
+                  Timetable
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Membership & Portal */}
+          {/* Activities & Chapters */}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-              Membership & Portal
+              Activities & Chapters
             </h3>
             <ul className="mt-3 space-y-2 text-xs">
               <li>
-                <Link href="/profile" className="hover:text-white transition-colors">
-                  Digital Membership Badge
+                <Link href="/events" className="hover:text-white transition-colors">
+                  Events
+                </Link>
+              </li>
+              <li>
+                <Link href="/clubs" className="hover:text-white transition-colors">
+                  Clubs
                 </Link>
               </li>
               <li>
                 <Link href="/notifications" className="hover:text-white transition-colors">
-                  Official Notices & Circulars
+                  Notices
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Account & Portal */}
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-white">
+              Account & Portal
+            </h3>
+            <ul className="mt-3 space-y-2 text-xs">
+              <li>
+                <Link href="/profile" className="hover:text-white transition-colors">
+                  Membership Badge
                 </Link>
               </li>
               <li>
                 <Link href="/sign-up" className="hover:text-white transition-colors">
-                  Student Account Registration
+                  Register
                 </Link>
               </li>
               <li>
                 <Link href="/login" className="hover:text-white transition-colors">
-                  Student Portal Login
+                  Login
                 </Link>
               </li>
               <li>

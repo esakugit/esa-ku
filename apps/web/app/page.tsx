@@ -700,31 +700,31 @@ export default async function HomePage() {
         )}
 
         {/* 7. Institutional Governance: Student Executive Committee & Faculty Advisory */}
-        <section className="border-t border-neutral-200 bg-white py-16">
+        <section className="border-t border-neutral-200 bg-white py-10 sm:py-14">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* Section Header: Celebrating Elected Student Leadership */}
-            <div className="text-center max-w-3xl mx-auto mb-12">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-bold uppercase tracking-wider text-accent border border-accent/20">
+            <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-accent border border-accent/20">
                 <span>🏛️</span>
                 <span>Student Leadership · {governance.academicYear || "2025/2026"}</span>
               </span>
-              <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight text-ink">
+              <h2 className="mt-2.5 text-2xl sm:text-3xl font-extrabold tracking-tight text-ink">
                 Executive Committee (ExCom)
               </h2>
-              <p className="mt-2 text-xs sm:text-sm text-neutral-600 max-w-xl mx-auto">
+              <p className="mt-1.5 text-xs sm:text-sm text-neutral-600 max-w-xl mx-auto">
                 Elected student leaders steering the Engineering Students Association across academic representation, industrial tours, hackathons, and student welfare.
               </p>
             </div>
 
-            {/* Executive Committee: Full-bleed Portrait Headshot Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Executive Committee: Sleek Compact Portrait Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
               {governance.members?.map((m: any, idx: number) => (
                 <div
                   key={idx}
-                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-xs hover:border-accent hover:shadow-lg transition-all duration-300"
+                  className="group relative flex flex-col overflow-hidden rounded-xl border border-neutral-200/90 bg-white shadow-2xs hover:border-accent hover:shadow-md transition-all duration-300"
                 >
-                  {/* Portrait Headshot Showcase (Hero Focus) */}
-                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-gradient-to-b from-neutral-100 via-neutral-50 to-neutral-200">
+                  {/* Portrait Headshot Showcase (Compact Height) */}
+                  <div className="relative h-48 sm:h-52 lg:h-56 w-full overflow-hidden bg-gradient-to-b from-neutral-100 via-neutral-50 to-neutral-200">
                     {m.photoBlobUrl ? (
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
@@ -733,53 +733,55 @@ export default async function HomePage() {
                         className="h-full w-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                      <div className="relative flex h-full w-full flex-col items-center justify-center p-6 text-center">
+                      <div className="relative flex h-full w-full flex-col items-center justify-center p-3 text-center">
                         {/* Blueprint decorative grid */}
                         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#1a56db_1.5px,transparent_1.5px)] [background-size:16px_16px]" />
-                        <div className="relative flex h-28 w-28 items-center justify-center rounded-full bg-accent-soft text-accent border-2 border-accent/20 shadow-inner group-hover:scale-110 transition-transform duration-300">
-                          <span className="text-4xl font-black">
+                        <div className="relative flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-accent-soft text-accent border-2 border-accent/20 shadow-inner group-hover:scale-105 transition-transform duration-300">
+                          <span className="text-2xl sm:text-3xl font-black">
                             {m.name ? m.name.charAt(0).toUpperCase() : "E"}
                           </span>
                         </div>
-                        <span className="relative mt-3 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                        <span className="relative mt-2 text-[9px] font-bold text-neutral-400 uppercase tracking-widest">
                           Official Portrait
                         </span>
                       </div>
                     )}
 
                     {/* Gradient scrim for readable typography */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
 
                     {/* Top Role Badge */}
-                    <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
-                      <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-xs ${
+                    <div className="absolute top-2 left-2 right-2 flex items-center justify-between gap-1 z-10">
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider shadow-xs backdrop-blur-xs truncate max-w-[72%] ${
                         idx === 0
                           ? "bg-amber-400 text-neutral-900 ring-1 ring-amber-500/30"
                           : "bg-white/95 text-accent ring-1 ring-neutral-200/50"
                       }`}>
                         {idx === 0 ? "★ " : ""}{m.role}
                       </span>
-                      <span className="rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-semibold text-white/80 backdrop-blur-xs">
+                      <span className="shrink-0 rounded-full bg-black/50 px-1.5 py-0.5 text-[8px] font-semibold text-white/80 backdrop-blur-xs">
                         KU ESA
                       </span>
                     </div>
 
                     {/* Bottom Details Overlaid on Portrait */}
-                    <div className="absolute bottom-0 inset-x-0 p-5 text-white">
-                      <h3 className="text-xl font-extrabold tracking-tight text-white drop-shadow-sm leading-snug">
+                    <div className="absolute bottom-0 inset-x-0 p-3 text-white z-10">
+                      <h3 className="text-sm sm:text-base font-bold tracking-tight text-white drop-shadow-sm leading-tight line-clamp-1">
                         {m.name || "Elected Leader"}
                       </h3>
-                      <p className="mt-1 text-xs font-semibold text-white/90 drop-shadow-xs flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-accent" />
-                        <span>{m.department}</span>
+                      <p className="mt-0.5 text-[10px] sm:text-[11px] font-medium text-white/90 drop-shadow-xs flex items-center gap-1.5 truncate">
+                        <span className="h-1.5 w-1.5 rounded-full bg-accent shrink-0" />
+                        <span className="truncate">{m.department}</span>
                       </p>
                     </div>
                   </div>
 
                   {/* Card Institutional Sub-Bar */}
-                  <div className="px-4 py-2.5 bg-neutral-50/90 border-t border-neutral-100 flex items-center justify-between text-[11px] text-neutral-500 font-medium">
-                    <span>School of Engineering</span>
-                    <span className="text-accent font-semibold">{governance.academicYear ? governance.academicYear.split(" ")[0] : "2025/2026"}</span>
+                  <div className="px-3 py-1.5 bg-neutral-50/90 border-t border-neutral-100 flex items-center justify-between text-[10px] text-neutral-500 font-medium">
+                    <span className="truncate">School of Eng.</span>
+                    <span className="text-accent font-semibold shrink-0 ml-1">
+                      {governance.academicYear ? governance.academicYear.split(" ")[0] : "2025/2026"}
+                    </span>
                   </div>
                 </div>
               ))}
