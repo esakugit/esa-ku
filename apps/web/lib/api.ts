@@ -24,5 +24,5 @@ export async function requireApiEsaAdmin(): Promise<CurrentUser | NextResponse> 
 }
 
 export function isResponse(x: unknown): x is NextResponse {
-  return x instanceof NextResponse;
+  return x instanceof NextResponse || x instanceof Response;
 }

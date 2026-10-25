@@ -45,14 +45,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const target = await db.query.users.findFirst({
     where: eq(users.id, userId),
-    with: {
-      badges: {
-        orderBy: [desc(badges.createdAt)],
-      },
-    },
   });
 
   if (!target) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+  const targetBadges = await db
+    .select()
+    .from(badges)
+    .where(eq(badges.userId, userId))
+    .orderBy(desc(badges.createdAt));
 
   const parsed = patchSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -74,7 +75,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       finalBadgeNumber = await generateUniqueBadgeNumber();
     }
 
-    const latestBadge = target.badges[0];
+    const latestBadge = targetBadges[0];
     if (latestBadge) {
       await db
         .update(badges)
