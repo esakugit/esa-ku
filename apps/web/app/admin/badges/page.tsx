@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { isEsaAdmin } from "@/lib/roles";
-import { BottomNav } from "@/components/BottomNav";
 import { InstitutionalHeader } from "@/components/InstitutionalHeader";
 import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 import { BadgeQueue } from "@/components/admin/BadgeQueue";
@@ -35,7 +34,6 @@ export default async function AdminBadgesPage() {
         <BadgeQueue />
       </main>
       <InstitutionalFooter />
-      <BottomNav />
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { isEsaAdmin } from "@/lib/roles";
-import { BottomNav } from "@/components/BottomNav";
 import { InstitutionalHeader } from "@/components/InstitutionalHeader";
 import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 import { ResourcesBrowser } from "@/components/ResourcesBrowser";
@@ -27,7 +26,6 @@ export default async function ResourcesPage() {
         <ResourcesBrowser defaultDepartmentId={user.departmentId} />
       </main>
       <InstitutionalFooter />
-      <BottomNav />
     </div>
   );
 }

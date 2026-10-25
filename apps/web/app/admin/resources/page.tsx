@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { isEsaAdmin } from "@/lib/roles";
-import { BottomNav } from "@/components/BottomNav";
 import { InstitutionalHeader } from "@/components/InstitutionalHeader";
 import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 import { ResourceModerationQueue } from "@/components/admin/ResourceModerationQueue";
@@ -34,7 +33,6 @@ export default async function AdminResourcesPage() {
         <ResourceModerationQueue />
       </main>
       <InstitutionalFooter />
-      <BottomNav />
     </div>
   );
 }

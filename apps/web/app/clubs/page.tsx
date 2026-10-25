@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { isEsaAdmin } from "@/lib/roles";
 import { db } from "@esa/db";
-import { BottomNav } from "@/components/BottomNav";
 import { InstitutionalHeader } from "@/components/InstitutionalHeader";
 import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 
@@ -92,7 +91,6 @@ export default async function ClubsPage() {
         </ul>
       </main>
       <InstitutionalFooter />
-      {user && <BottomNav />}
     </div>
   );
 }

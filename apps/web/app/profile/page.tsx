@@ -5,7 +5,6 @@ import { isEsaAdmin } from "@/lib/roles";
 import { db, clubAdmins } from "@esa/db";
 import { eq } from "drizzle-orm";
 import { SignOutButton } from "@/components/SignOutButton";
-import { BottomNav } from "@/components/BottomNav";
 import { InstitutionalHeader } from "@/components/InstitutionalHeader";
 import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 import { BadgeSection } from "@/components/BadgeSection";
@@ -204,7 +203,6 @@ export default async function ProfilePage() {
         </div>
       </main>
       <InstitutionalFooter />
-      <BottomNav />
     </div>
   );
 }

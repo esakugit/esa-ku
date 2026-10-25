@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { db, cohorts, departments } from "@esa/db";
 import { eq } from "drizzle-orm";
-import { BottomNav } from "@/components/BottomNav";
 import { InstitutionalHeader } from "@/components/InstitutionalHeader";
 import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 import { isEsaAdmin } from "@/lib/roles";
@@ -92,7 +91,6 @@ export default async function TimetablePage() {
         )}
       </main>
       <InstitutionalFooter />
-      <BottomNav />
     </div>
   );
 }

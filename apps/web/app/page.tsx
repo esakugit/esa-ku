@@ -4,7 +4,6 @@ import { isEsaAdmin } from "@/lib/roles";
 import { db } from "@esa/db";
 import { InstitutionalHeader } from "@/components/InstitutionalHeader";
 import { InstitutionalFooter } from "@/components/InstitutionalFooter";
-import { BottomNav } from "@/components/BottomNav";
 import { DEFAULT_GOVERNANCE, DEFAULT_GALLERY } from "@/lib/settings-defaults";
 
 export const dynamic = "force-dynamic";
@@ -878,9 +877,6 @@ export default async function HomePage() {
 
       {/* 7. Official Institutional Footer */}
       <InstitutionalFooter />
-
-      {/* Mobile Bottom Navigation (for quick mobile touch access) */}
-      <BottomNav />
     </div>
   );
 }

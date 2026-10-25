@@ -188,8 +188,8 @@ export async function InstitutionalFooter() {
         </div>
       </div>
 
-      {/* Lower Bar */}
-      <div className="border-t border-neutral-800 bg-neutral-950 py-5 text-center text-xs text-neutral-500">
+      {/* Lower Bar with clearance for mobile BottomNav */}
+      <div className="border-t border-neutral-800 bg-neutral-950 py-5 pb-20 md:pb-5 text-center text-xs text-neutral-500">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 sm:flex-row sm:px-6 lg:px-8">
           <p>
             © {new Date().getFullYear()} Engineering Students Association (ESA) · Kenyatta University.

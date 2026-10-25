@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { db } from "@esa/db";
 import { getCurrentUser } from "@/lib/auth";
 import { isClubAdminFor, isEsaAdmin } from "@/lib/roles";
-import { BottomNav } from "@/components/BottomNav";
 import { InstitutionalHeader } from "@/components/InstitutionalHeader";
 import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 import { ClubEventManager } from "@/components/ClubEventManager";
@@ -142,7 +141,6 @@ export default async function ClubDetailPage({ params }: { params: Promise<{ slu
         </section>
       </main>
       <InstitutionalFooter />
-      {user && <BottomNav />}
     </div>
   );
 }

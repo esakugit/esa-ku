@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { isEsaAdmin } from "@/lib/roles";
-import { BottomNav } from "@/components/BottomNav";
 import { InstitutionalHeader } from "@/components/InstitutionalHeader";
 import { InstitutionalFooter } from "@/components/InstitutionalFooter";
 import { NotificationList } from "@/components/NotificationList";
@@ -128,7 +127,6 @@ export default async function NotificationsPage() {
         <NotificationList />
       </main>
       <InstitutionalFooter />
-      <BottomNav />
     </div>
   );
 }

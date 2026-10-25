@@ -4,7 +4,6 @@ import { getCurrentUser } from "@/lib/auth";
 import { isEsaAdmin } from "@/lib/roles";
 import { InstitutionalHeader } from "@/components/InstitutionalHeader";
 import { InstitutionalFooter } from "@/components/InstitutionalFooter";
-import { BottomNav } from "@/components/BottomNav";
 import { EventsFeedView } from "@/components/EventsFeedView";
 
 export const dynamic = "force-dynamic";
@@ -63,7 +62,6 @@ export default async function EventsPage() {
       </main>
 
       <InstitutionalFooter />
-      <BottomNav />
     </div>
   );
 }

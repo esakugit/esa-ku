@@ -4,6 +4,7 @@ import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { ToastProvider } from "@/components/Toast";
 import { PageTransition } from "@/components/PageTransition";
 import { InstallAppPrompt } from "@/components/InstallAppPrompt";
+import { BottomNav } from "@/components/BottomNav";
 
 export const metadata: Metadata = {
   title: "ESA Campus Platform",
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ToastProvider>
           <PageTransition>{children}</PageTransition>
+          <BottomNav />
           <ServiceWorkerRegister />
           <InstallAppPrompt />
         </ToastProvider>
