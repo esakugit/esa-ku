@@ -27,8 +27,8 @@ export default async function AdminBadgesPage() {
             Membership Badge Verification Queue
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-neutral-600">
-            Cross-check student M-Pesa transaction reference codes against the official till statement
-            for {env.NEXT_PUBLIC_ESA_TILL_NAME} (Till: {env.NEXT_PUBLIC_ESA_TILL_NUMBER} · Fee: KES {env.NEXT_PUBLIC_ESA_BADGE_FEE}) before authorizing.
+            Cross-check student M-Pesa transaction reference codes against the official Paybill statement
+            for {env.NEXT_PUBLIC_ESA_PAYBILL_NAME} (Paybill: {env.NEXT_PUBLIC_ESA_PAYBILL_NUMBER} · Acc: {env.NEXT_PUBLIC_ESA_ACCOUNT_NUMBER} · Fee: KES {env.NEXT_PUBLIC_ESA_BADGE_FEE}) before authorizing.
           </p>
         </header>
 

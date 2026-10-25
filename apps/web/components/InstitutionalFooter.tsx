@@ -56,20 +56,28 @@ export async function InstitutionalFooter() {
               <p className="pt-1.5 text-neutral-400">
                 <span className="text-neutral-500 font-semibold">Official Email:</span>{" "}
                 <a
-                  href={`mailto:${footer.email || "esa.kenyatta@gmail.com"}`}
+                  href={`mailto:${footer.email || "esa.kenyattauniv@gmail.com"}`}
                   className="text-neutral-300 hover:text-white transition-colors underline"
                 >
-                  {footer.email || "esa.kenyatta@gmail.com"}
+                  {footer.email || "esa.kenyattauniv@gmail.com"}
                 </a>
               </p>
 
-              <p className="text-neutral-400">
-                <span className="text-neutral-500 font-semibold">M-Pesa Badge Till:</span>{" "}
-                <span className="font-mono font-bold text-accent-muted">
-                  {footer.tillNumber || "625625"}
-                </span>{" "}
-                ({footer.tillName || "ESA Kenyatta University"})
-              </p>
+              <div className="text-neutral-400 space-y-0.5 pt-0.5">
+                <p>
+                  <span className="text-neutral-500 font-semibold">M-Pesa Paybill:</span>{" "}
+                  <span className="font-mono font-bold text-accent-muted">
+                    {footer.paybillNumber || "625625"}
+                  </span>
+                </p>
+                <p>
+                  <span className="text-neutral-500 font-semibold">Account No:</span>{" "}
+                  <span className="font-mono font-bold text-neutral-200">
+                    {footer.accountNumber || "01521260661100"}
+                  </span>{" "}
+                  <span className="text-neutral-500 text-[11px]">({footer.paybillName || "ESA Kenyatta University"})</span>
+                </p>
+              </div>
 
               {(footer.phone1 || footer.phone2) && (
                 <p className="text-neutral-400">

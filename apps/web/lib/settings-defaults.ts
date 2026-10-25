@@ -11,8 +11,9 @@ export interface FooterSettings {
   email: string;
   phone1: string;
   phone2: string;
-  tillNumber: string;
-  tillName: string;
+  paybillNumber: string;
+  accountNumber: string;
+  paybillName: string;
   officeLocation: string;
   postalAddress: string;
   academicYear: string;
@@ -59,11 +60,12 @@ export const DEFAULT_HERO: HeroSettings = {
 };
 
 export const DEFAULT_FOOTER: FooterSettings = {
-  email: "esa.kenyatta@gmail.com",
+  email: "esa.kenyattauniv@gmail.com",
   phone1: "+254 113 790 205",
   phone2: "+254 700 850 287",
-  tillNumber: "625625",
-  tillName: "ESA Kenyatta University",
+  paybillNumber: "625625",
+  accountNumber: "01521260661100",
+  paybillName: "ESA Kenyatta University",
   officeLocation: "School of Engineering & Architecture, Main Campus, Thika Road",
   postalAddress: "P.O. Box 43844-00100 Nairobi, Kenya",
   academicYear: "2025/2026",

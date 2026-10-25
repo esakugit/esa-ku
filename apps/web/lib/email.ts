@@ -83,7 +83,7 @@ function getLogoAttachment(): { filename: string; path: string; cid: string } | 
  * - Official ESA Kenyatta University logo attached via inline CID
  * - Consistent ESA engineering brand palette (#2554D7 royal blue)
  * - Clear action CTAs with copyable URL fallback boxes
- * - Institutional footer with official Till No. 625625 and contact details
+ * - Institutional footer with official Paybill No. 625625 and contact details
  */
 function renderBrandedEmailHtml({
   preheader,
@@ -197,7 +197,7 @@ function renderBrandedEmailHtml({
                       Official Campus Platform · Kenyatta University, Main Campus
                     </p>
                     <p style="font-size:10px;color:#94a3b8;margin:0;">
-                      M-Pesa Badge Till: <strong>625625</strong> · Support: <strong>esa.kenyatta@gmail.com</strong>
+                      M-Pesa Paybill: <strong>625625</strong> · Acc: <strong>01521260661100</strong> · Support: <strong>esa.kenyattauniv@gmail.com</strong>
                     </p>
                   </td>
                 </tr>
@@ -363,7 +363,7 @@ export async function sendBadgeDecisionEmail(
     bodyHtml,
     ctaText,
     ctaUrl: profileUrl,
-    footerNote: "Questions regarding your membership badge? Contact the ESA Treasurer at esa.kenyatta@gmail.com.",
+    footerNote: "Questions regarding your membership badge? Contact the ESA Treasurer at esa.kenyattauniv@gmail.com.",
   });
 
   await transport.sendMail({

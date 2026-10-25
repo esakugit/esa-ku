@@ -137,8 +137,9 @@ export default async function ProfilePage() {
               hasActiveBadge={user.hasActiveBadge || isEsaAdmin(user)}
               badgeNumber={user.badgeNumber || (isEsaAdmin(user) ? "ESA/ADMIN/01" : null)}
               regNo={user.regNo}
-              tillNumber={env.NEXT_PUBLIC_ESA_TILL_NUMBER}
-              tillName={env.NEXT_PUBLIC_ESA_TILL_NAME}
+              paybillNumber={env.NEXT_PUBLIC_ESA_PAYBILL_NUMBER}
+              accountNumber={env.NEXT_PUBLIC_ESA_ACCOUNT_NUMBER}
+              paybillName={env.NEXT_PUBLIC_ESA_PAYBILL_NAME}
               badgeFee={env.NEXT_PUBLIC_ESA_BADGE_FEE}
               legacyCardImageUrl={user.legacyCardImageUrl}
             />

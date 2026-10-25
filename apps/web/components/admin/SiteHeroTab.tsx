@@ -270,7 +270,7 @@ export function SiteHeroTab() {
                 className="field-input"
                 value={footerForm.email}
                 onChange={(e) => setFooterForm({ ...footerForm, email: e.target.value })}
-                placeholder="esa.kenyatta@gmail.com"
+                placeholder="esa.kenyattauniv@gmail.com"
               />
             </div>
 
@@ -296,24 +296,49 @@ export function SiteHeroTab() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="field-label">M-Pesa Badge Till Number</label>
+                <label className="field-label">M-Pesa Paybill Number</label>
                 <input
                   required
                   className="field-input font-mono font-bold"
-                  value={footerForm.tillNumber}
-                  onChange={(e) => setFooterForm({ ...footerForm, tillNumber: e.target.value })}
+                  value={footerForm.paybillNumber ?? "625625"}
+                  onChange={(e) =>
+                    setFooterForm({
+                      ...footerForm,
+                      paybillNumber: e.target.value,
+                    })
+                  }
                   placeholder="625625"
                 />
               </div>
               <div>
-                <label className="field-label">M-Pesa Till Account Name</label>
+                <label className="field-label">M-Pesa Account Number</label>
+                <input
+                  required
+                  className="field-input font-mono font-bold"
+                  value={footerForm.accountNumber ?? "01521260661100"}
+                  onChange={(e) =>
+                    setFooterForm({
+                      ...footerForm,
+                      accountNumber: e.target.value,
+                    })
+                  }
+                  placeholder="01521260661100"
+                />
+              </div>
+              <div>
+                <label className="field-label">M-Pesa Business Name</label>
                 <input
                   required
                   className="field-input"
-                  value={footerForm.tillName}
-                  onChange={(e) => setFooterForm({ ...footerForm, tillName: e.target.value })}
+                  value={footerForm.paybillName ?? "ESA Kenyatta University"}
+                  onChange={(e) =>
+                    setFooterForm({
+                      ...footerForm,
+                      paybillName: e.target.value,
+                    })
+                  }
                   placeholder="ESA Kenyatta University"
                 />
               </div>
@@ -362,11 +387,18 @@ export function SiteHeroTab() {
               <div className="pt-2 border-t border-neutral-800 space-y-1">
                 <p>
                   <strong className="text-neutral-400">Official Email:</strong>{" "}
-                  <span className="text-white underline">{footerForm.email}</span>
+                  <span className="text-white underline">{footerForm.email || "esa.kenyattauniv@gmail.com"}</span>
                 </p>
                 <p>
-                  <strong className="text-neutral-400">M-Pesa Badge Till:</strong>{" "}
-                  <span className="font-mono text-accent-muted font-bold">{footerForm.tillNumber}</span> ({footerForm.tillName})
+                  <strong className="text-neutral-400">M-Pesa Paybill:</strong>{" "}
+                  <span className="font-mono text-accent-muted font-bold">
+                    {footerForm.paybillNumber || "625625"}
+                  </span>{" "}
+                  · <strong className="text-neutral-400">Acc:</strong>{" "}
+                  <span className="font-mono text-white font-bold">
+                    {footerForm.accountNumber || "01521260661100"}
+                  </span>{" "}
+                  ({footerForm.paybillName || "ESA Kenyatta University"})
                 </p>
                 <p>
                   <strong className="text-neutral-400">Helplines:</strong>{" "}

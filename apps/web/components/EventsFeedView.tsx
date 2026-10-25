@@ -268,9 +268,9 @@ export function EventsFeedView({
                     <span>+254 700 850 287</span>
                   </a>
                   <span className="hidden sm:inline text-neutral-300">·</span>
-                  <a href="mailto:esa.kenyatta@gmail.com" className="inline-flex items-center gap-1.5 hover:text-accent transition-colors">
+                  <a href="mailto:esa.kenyattauniv@gmail.com" className="inline-flex items-center gap-1.5 hover:text-accent transition-colors">
                     <span className="text-accent">✉️</span>
-                    <span>esa.kenyatta@gmail.com</span>
+                    <span>esa.kenyattauniv@gmail.com</span>
                   </a>
                 </div>
               </div>

@@ -30,8 +30,9 @@ export function BadgeSection({
   hasActiveBadge,
   badgeNumber,
   regNo,
-  tillNumber,
-  tillName,
+  paybillNumber,
+  accountNumber,
+  paybillName,
   badgeFee = "300",
   legacyCardImageUrl,
 }: {
@@ -39,8 +40,9 @@ export function BadgeSection({
   hasActiveBadge: boolean;
   badgeNumber: string | null;
   regNo?: string | null;
-  tillNumber: string;
-  tillName: string;
+  paybillNumber?: string;
+  accountNumber?: string;
+  paybillName?: string;
   badgeFee?: string;
   /** Scan of physical membership card if linked from legacy roster */
   legacyCardImageUrl?: string | null;
@@ -631,17 +633,37 @@ export function BadgeSection({
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg bg-neutral-50 px-4 py-3 border border-neutral-200">
-            <div>
-              <p className="text-xs font-semibold text-neutral-500">M-Pesa Buy Goods Till</p>
-              <p className="text-xl font-black tracking-wide text-ink">{tillNumber}</p>
-              <p className="text-xs font-medium text-neutral-600">{tillName}</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-neutral-50 px-4 py-3.5 border border-neutral-200">
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5">
+                <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 uppercase">
+                  Lipa na M-Pesa
+                </span>
+                <span className="text-xs font-bold text-ink uppercase tracking-wider">Paybill</span>
+              </div>
+              <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                <p className="text-xs text-neutral-500">
+                  Business No: <strong className="font-mono text-base text-ink">{paybillNumber || "625625"}</strong>
+                </p>
+                <p className="text-xs text-neutral-500">
+                  Account No: <strong className="font-mono text-base text-accent">{accountNumber || "01521260661100"}</strong>
+                </p>
+              </div>
+              <p className="text-[11px] font-medium text-neutral-500">{paybillName || "ESA Kenyatta University"}</p>
             </div>
             <div className="border-t sm:border-t-0 sm:border-l border-neutral-200 pt-2 sm:pt-0 sm:pl-4 text-left sm:text-right">
               <p className="text-xs font-semibold text-neutral-500">Annual Membership</p>
-              <p className="text-lg font-extrabold text-accent">KES {badgeFee}</p>
+              <p className="text-xl font-black text-accent">KES {badgeFee}</p>
               <span className="text-[10px] text-neutral-400">1 Academic Year</span>
             </div>
+          </div>
+
+          <div className="rounded-lg bg-neutral-100/70 p-3 text-xs text-neutral-600 space-y-1 border border-neutral-200/60">
+            <p className="font-semibold text-ink">Payment Instructions:</p>
+            <p>1. Open M-Pesa → Lipa na M-Pesa → <strong>Paybill</strong></p>
+            <p>2. Enter Business No: <strong className="font-mono">{paybillNumber || "625625"}</strong></p>
+            <p>3. Enter Account No: <strong className="font-mono">{accountNumber || "01521260661100"}</strong></p>
+            <p>4. Enter Amount: <strong>KES {badgeFee}</strong>, complete payment, and paste the confirmation SMS code below.</p>
           </div>
 
           {pending ? (
